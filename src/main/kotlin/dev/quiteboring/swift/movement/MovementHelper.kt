@@ -1,17 +1,22 @@
 package dev.quiteboring.swift.movement
 
-import net.minecraft.util.math.BlockPos
+import dev.quiteboring.swift.calc.PrecomputedData
 
 object MovementHelper {
 
   fun isSolid(ctx: CalculationContext, x: Int, y: Int, z: Int): Boolean {
-    val state = ctx.get(x, y, z) ?: return false
-    return !state.getCollisionShape(ctx.world, BlockPos(x, y, z)).isEmpty
+    val flags = ctx.getFlags(x, y, z)
+    return (flags and PrecomputedData.MASK_SOLID) != 0 && (flags and PrecomputedData.MASK_AVOID) == 0
   }
 
   fun isPassable(ctx: CalculationContext, x: Int, y: Int, z: Int): Boolean {
-    val state = ctx.get(x, y, z) ?: return false
-    return state.getCollisionShape(ctx.world, BlockPos(x, y, z)).isEmpty
+    val flags = ctx.getFlags(x, y, z)
+    return ((flags and PrecomputedData.MASK_WALKABLE) != 0 || (flags and PrecomputedData.MASK_LIQUID) != 0)
+      && (flags and PrecomputedData.MASK_AVOID) == 0
+  }
+
+  fun isLiquid(ctx: CalculationContext, x: Int, y: Int, z: Int): Boolean {
+    return (ctx.getFlags(x, y, z) and PrecomputedData.MASK_LIQUID) != 0
   }
 
   fun isSafe(ctx: CalculationContext, x: Int, y: Int, z: Int): Boolean {
@@ -27,10 +32,7 @@ object MovementHelper {
         // println("isSafe check failed: Head obstructed at $x, ${y+1}, $z")
         return false
     }
-    
+
     return true
   }
-
-
-
 }

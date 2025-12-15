@@ -8,10 +8,7 @@ import net.minecraft.util.math.BlockPos
 
 class MovementAscend(val from: BlockPos, to: BlockPos) : Movement(from, to) {
 
-  override fun calculateCost(
-    ctx: CalculationContext,
-    res: MovementResult,
-  ) {
+  override fun calculateCost(ctx: CalculationContext, res: MovementResult) {
     calculateCost(ctx, source.x, source.y, source.z, target.x, target.z, res)
     costs = res.cost
   }
@@ -27,11 +24,12 @@ class MovementAscend(val from: BlockPos, to: BlockPos) : Movement(from, to) {
       res: MovementResult
     ) {
       if(!MovementHelper.isSafe(ctx, destX, y + 1, destZ)) return
+
       if(!MovementHelper.isPassable(ctx, x, y + 2, z)) return
-      
+
       res.set(destX, y + 1, destZ)
-      res.cost = ctx.cost.JUMP_ONE_BLOCK_COST
+
+      res.cost = ctx.cost.JUMP_ONE_BLOCK_COST + ctx.cost.JUMP_PENALTY
     }
   }
-
 }
