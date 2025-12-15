@@ -34,7 +34,7 @@ object TestCommand {
 
           val player = PlayerUtils.getBlockStandingOn() ?: return@executes 1
           val ctx = CalculationContext()
-          
+
           var goalY = y
           val goalPos = BlockPos(x, y, z)
           val goalState = ctx.get(x, y, z)

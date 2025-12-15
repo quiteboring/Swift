@@ -10,17 +10,15 @@ import kotlin.math.min
 class WallDistanceCalculator(private val ctx: CalculationContext) {
 
   companion object {
-    const val MAX_DIST = 6  // Reduced from 8
+    const val MAX_DIST = 6
     private val EDGE_PENALTIES = doubleArrayOf(50.0, 20.0, 8.0, 2.0, 0.0, 0.0, 0.0)
     private val WALL_PENALTIES = doubleArrayOf(20.0, 8.0, 3.0, 1.0, 0.0, 0.0, 0.0)
   }
 
-  // Single cache for the final penalty - most important optimization
   private val penaltyCache = Long2DoubleOpenHashMap().apply {
     defaultReturnValue(Double.NaN)
   }
 
-  // Keep separate caches only for debug/heatmap
   private val edgeCache = Long2IntOpenHashMap().apply { defaultReturnValue(-1) }
   private val wallCache = Long2IntOpenHashMap().apply { defaultReturnValue(-1) }
 
@@ -41,7 +39,7 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
     var wallE = MAX_DIST
     var wallW = MAX_DIST
 
-    // North - combined edge + wall scan
+    // North
     for (d in 1..MAX_DIST) {
       val nz = z - d
       val foundEdge = minEdge == MAX_DIST && isEdgeFast(x, y, nz)
@@ -50,7 +48,7 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
       if (foundEdge) minEdge = d - 1
       if (foundWall) wallN = d - 1
 
-      if (minEdge == 0) return 70.0  // Early exit - maximum penalty
+      if (minEdge == 0) return 70.0
       if (foundWall) break
     }
 
@@ -93,10 +91,8 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
       }
     }
 
-    // Calculate penalties
     val edgePenalty = EDGE_PENALTIES[minEdge.coerceIn(0, 6)]
 
-    // Corridor detection
     val nsWidth = if (wallN < MAX_DIST && wallS < MAX_DIST) wallN + wallS + 1 else 0
     val ewWidth = if (wallE < MAX_DIST && wallW < MAX_DIST) wallE + wallW + 1 else 0
 
@@ -124,7 +120,6 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
   }
 
   private fun isEdgeFast(x: Int, y: Int, z: Int): Boolean {
-    // Quick check: solid ground at foot level = no edge
     val below = ctx.get(x, y - 1, z)
     if (below != null && !below.isAir) {
       val block = below.block
@@ -133,7 +128,6 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
       }
     }
 
-    // Scan down for ground (reduced range)
     for (cy in (y - 2) downTo (y - 4)) {
       val state = ctx.get(x, cy, z) ?: continue
       if (state.isAir) continue
@@ -142,7 +136,7 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
         return (y - 1) - cy >= 3
       }
     }
-    return true  // No ground found = edge
+    return true
   }
 
   private fun isWallFast(x: Int, y: Int, z: Int): Boolean {
@@ -155,7 +149,6 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
 
     val block = state.block
 
-    // Fast rejection of common non-blocking blocks (single when expression)
     when (block) {
       is CarpetBlock, is SlabBlock, is StairsBlock,
       is DoorBlock, is TrapdoorBlock, is TorchBlock,
@@ -169,7 +162,6 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
       is FenceBlock, is FenceGateBlock, is WallBlock -> return true
     }
 
-    // Check collision shape
     if (!MovementHelper.isSolidState(ctx, state, x, y, z)) return false
 
     ctx.bsa.mutablePos.set(x, y, z)
@@ -180,7 +172,6 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
     return (bounds.maxY - bounds.minY) >= 0.5
   }
 
-  // Debug methods - keep for heatmap
   fun getEdgeDistance(x: Int, y: Int, z: Int): Int {
     val key = PathNode.coordKey(x, y, z)
     var dist = edgeCache.get(key)
