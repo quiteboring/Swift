@@ -1,17 +1,12 @@
 package dev.quiteboring.swift.movement.movements
 
-import dev.quiteboring.swift.movement.CalculationContext
-import dev.quiteboring.swift.movement.Movement
-import dev.quiteboring.swift.movement.MovementResult
-import dev.quiteboring.swift.movement.MovementHelper
+import dev.quiteboring.swift.movement.*
+import net.minecraft.block.SlabBlock
+import net.minecraft.block.StairsBlock
 import net.minecraft.util.math.BlockPos
 
 class MovementAscend(val from: BlockPos, to: BlockPos) : Movement(from, to) {
-
-  override fun calculateCost(
-    ctx: CalculationContext,
-    res: MovementResult,
-  ) {
+  override fun calculateCost(ctx: CalculationContext, res: MovementResult) {
     calculateCost(ctx, source.x, source.y, source.z, target.x, target.z, res)
     costs = res.cost
   }
@@ -19,19 +14,27 @@ class MovementAscend(val from: BlockPos, to: BlockPos) : Movement(from, to) {
   companion object {
     fun calculateCost(
       ctx: CalculationContext,
-      x: Int,
-      y: Int,
-      z: Int,
-      destX: Int,
-      destZ: Int,
+      x: Int, y: Int, z: Int,
+      destX: Int, destZ: Int,
       res: MovementResult
     ) {
-      if(!MovementHelper.isSafe(ctx, destX, y + 1, destZ)) return
-      if(!MovementHelper.isPassable(ctx, x, y + 2, z)) return
-      
+      if (!MovementHelper.isSafe(ctx, destX, y + 1, destZ)) return
+      if (!MovementHelper.isPassable(ctx, x, y + 2, z)) return
+
       res.set(destX, y + 1, destZ)
-      res.cost = ctx.cost.JUMP_ONE_BLOCK_COST
+
+      val groundState = ctx.get(destX, y, destZ)
+      val block = groundState?.block
+
+      val baseCost = if (block is SlabBlock || block is StairsBlock) {
+        ctx.cost.SLAB_ASCENT_TIME
+      } else {
+        ctx.cost.JUMP_UP_ONE_BLOCK_TIME
+      }
+
+      val edgePenalty = ctx.wallDistance.getPathPenalty(destX, y + 1, destZ)
+
+      res.cost = baseCost + edgePenalty
     }
   }
-
 }

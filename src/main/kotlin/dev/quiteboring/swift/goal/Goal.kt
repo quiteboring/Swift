@@ -4,33 +4,39 @@ import dev.quiteboring.swift.movement.CalculationContext
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.sqrt
 
-class Goal(val goalX: Int, val goalY: Int, val goalZ: Int, val ctx: CalculationContext) : IGoal {
+class Goal(
+  val goalX: Int,
+  val goalY: Int,
+  val goalZ: Int,
+  ctx: CalculationContext
+) : IGoal {
 
-  private val sqrt2 = sqrt(2.0)
+  // precompute cuz it's slightly faster ig.
+  private val sprintCost = ctx.cost.SPRINT_ONE_BLOCK_TIME
+  private val diagonalCost = sprintCost * 1.4142135623730951  // sqrt(2)
+  private val fallCostPerBlock = ctx.cost.getFallTime(2) * 0.5
+  private val jumpCostPerBlock = ctx.cost.JUMP_UP_ONE_BLOCK_TIME * 0.5
 
   override fun isAtGoal(x: Int, y: Int, z: Int): Boolean {
     return x == goalX && y == goalY && z == goalZ
   }
 
   override fun heuristic(x: Int, y: Int, z: Int): Double {
-    val dx = x - goalX
+    val dx = abs(x - goalX)
     val dy = y - goalY
-    val dz = z - goalZ
+    val dz = abs(z - goalZ)
+
+    val diag = min(dx, dz)
+    val straight = max(dx, dz) - diag
+    val horizontal = diag * diagonalCost + straight * sprintCost
 
     val vertical = when {
-      dy > 0 -> ctx.cost.N_BLOCK_FALL_COST[2] / 2 * dy
-      dy < 0 -> -dy * ctx.cost.ONE_BLOCK_SPRINT_COST
+      dy > 0 -> dy * fallCostPerBlock
+      dy < 0 -> -dy * jumpCostPerBlock
       else -> 0.0
     }
 
-    val absX = abs(dx)
-    val absZ = abs(dz)
-    val diag = min(absX, absZ)
-    val straight = max(absX, absZ) - diag
-
-    return vertical + (diag * sqrt2 + straight) * 3.563
+    return horizontal + vertical
   }
-
 }

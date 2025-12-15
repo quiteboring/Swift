@@ -1,17 +1,10 @@
 package dev.quiteboring.swift.movement.movements
 
-import dev.quiteboring.swift.movement.CalculationContext
-import dev.quiteboring.swift.movement.Movement
-import dev.quiteboring.swift.movement.MovementResult
-import dev.quiteboring.swift.movement.MovementHelper
+import dev.quiteboring.swift.movement.*
 import net.minecraft.util.math.BlockPos
 
 class MovementDescend(val from: BlockPos, to: BlockPos) : Movement(from, to) {
-
-  override fun calculateCost(
-    ctx: CalculationContext,
-    res: MovementResult,
-  ) {
+  override fun calculateCost(ctx: CalculationContext, res: MovementResult) {
     calculateCost(ctx, source.x, source.y, source.z, target.x, target.z, res)
     costs = res.cost
   }
@@ -19,26 +12,34 @@ class MovementDescend(val from: BlockPos, to: BlockPos) : Movement(from, to) {
   companion object {
     fun calculateCost(
       ctx: CalculationContext,
-      x: Int,
-      y: Int,
-      z: Int,
-      destX: Int,
-      destZ: Int,
+      x: Int, y: Int, z: Int,
+      destX: Int, destZ: Int,
       res: MovementResult
     ) {
-      for (i in 1..ctx.maxFallHeight) {
-          val dy = y - i
-          if (!MovementHelper.isPassable(ctx, destX, dy, destZ)) {
-              return
+      if (!MovementHelper.isPassable(ctx, destX, y, destZ)) return
+      if (!MovementHelper.isPassable(ctx, destX, y + 1, destZ)) return
+
+      for (fallDist in 1..ctx.maxFallHeight) {
+        val destY = y - fallDist
+
+        if (!MovementHelper.isPassable(ctx, destX, destY + 1, destZ)) return
+        if (!MovementHelper.isPassable(ctx, destX, destY, destZ)) return
+
+        if (MovementHelper.isSolid(ctx, destX, destY - 1, destZ)) {
+          res.set(destX, destY, destZ)
+
+          var cost = ctx.cost.WALK_OFF_EDGE_TIME + ctx.cost.getFallTime(fallDist)
+
+          if (fallDist > 3) {
+            cost += (fallDist - 3) * (fallDist - 3) * 2.0
           }
-           
-          if (MovementHelper.isSafe(ctx, destX, dy, destZ)) {
-              res.set(destX, dy, destZ)
-              res.cost = ctx.cost.WALK_OFF_ONE_BLOCK_COST + ctx.cost.N_BLOCK_FALL_COST[i]
-              return
-          }
+
+          cost += ctx.wallDistance.getPathPenalty(destX, destY, destZ)
+
+          res.cost = cost
+          return
+        }
       }
     }
   }
-
 }

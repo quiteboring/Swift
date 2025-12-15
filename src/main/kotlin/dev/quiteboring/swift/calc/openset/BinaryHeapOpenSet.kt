@@ -4,67 +4,89 @@ import dev.quiteboring.swift.calc.PathNode
 
 class BinaryHeapOpenSet(initialSize: Int = 1024) {
 
-  var items = arrayOfNulls<PathNode>(initialSize)
+  private var items = arrayOfNulls<PathNode>(initialSize)
   var size = 0
+    private set
 
   fun add(node: PathNode) {
     if (size >= items.size - 1) {
-      items = items.copyOf(items.size shl 1)
+      items = items.copyOf(items.size * 2)
     }
-    node.heapPosition = ++size
+
+    size++
+    node.heapPosition = size
     items[size] = node
-    relocate(node)
+    siftUp(node)
   }
 
   fun relocate(node: PathNode) {
-    var parent = node.heapPosition ushr 1
-    var parentNode = items[parent]
+    siftUp(node)
+  }
 
-    while (node.heapPosition > 1 && node.fCost < parentNode!!.fCost) {
-      items[node.heapPosition] = parentNode
-      items[parent] = node
-      node.heapPosition = parent
-      parent = parent ushr 1
-      parentNode = items[parent]
+  private fun siftUp(node: PathNode) {
+    var pos = node.heapPosition
+    val cost = node.fCost
+
+    while (pos > 1) {
+      val parentPos = pos ushr 1
+      val parent = items[parentPos]!!
+
+      if (cost >= parent.fCost) break
+
+      items[pos] = parent
+      parent.heapPosition = pos
+      pos = parentPos
     }
+
+    items[pos] = node
+    node.heapPosition = pos
   }
 
   fun poll(): PathNode {
-    val itemToPoll = items[1]
-    itemToPoll!!.heapPosition = -1
-    val itemToSwap = items[size--]
-    itemToSwap!!.heapPosition = 1
-    items[1] = itemToSwap
-    val itemToSwapCost = itemToSwap.fCost
+    val result = items[1]!!
+    result.heapPosition = -1
 
-    if (size <= 1) return itemToPoll
+    val last = items[size]!!
+    items[size] = null
+    size--
 
-    var parentIndex = 1
-    var smallestChildIndex = 2
-
-    while (smallestChildIndex <= size) {
-      val rightChildIndex = smallestChildIndex + 1
-      if (rightChildIndex < size && items[rightChildIndex]!!.fCost < items[smallestChildIndex]!!.fCost) {
-        smallestChildIndex = rightChildIndex
-      }
-
-      if (items[smallestChildIndex]!!.fCost >= itemToSwapCost) {
-        break
-      }
-
-      val swapTemp = items[smallestChildIndex]
-      swapTemp!!.heapPosition = parentIndex
-      items[parentIndex] = swapTemp
-      itemToSwap.heapPosition = smallestChildIndex
-      items[smallestChildIndex] = itemToSwap
-
-      parentIndex = smallestChildIndex
-      smallestChildIndex = parentIndex shl 1
+    if (size > 0) {
+      items[1] = last
+      last.heapPosition = 1
+      siftDown(last)
     }
 
-    return itemToPoll
+    return result
   }
 
-  fun isEmpty() = size <= 0
+  private fun siftDown(node: PathNode) {
+    var pos = 1
+    val cost = node.fCost
+    val halfSize = size ushr 1
 
+    while (pos <= halfSize) {
+      var childPos = pos shl 1
+      var child = items[childPos]!!
+
+      val rightPos = childPos + 1
+      if (rightPos <= size) {
+        val right = items[rightPos]!!
+        if (right.fCost < child.fCost) {
+          childPos = rightPos
+          child = right
+        }
+      }
+
+      if (cost <= child.fCost) break
+
+      items[pos] = child
+      child.heapPosition = pos
+      pos = childPos
+    }
+
+    items[pos] = node
+    node.heapPosition = pos
+  }
+
+  fun isEmpty() = size == 0
 }

@@ -1,108 +1,57 @@
 package dev.quiteboring.swift.costs
 
-import kotlin.math.pow
-
 class ActionCosts(
-  sprintMovementFactor: Double = 0.13,
-  walkingMovementFactor: Double = 0.1,
-  sneakingMovementFactor: Double = 0.03,
-  jumpBoostAmplifier: Int
+  private val jumpBoostAmplifier: Int = -1
 ) {
-
   val INF_COST = 1e6
-  val N_BLOCK_FALL_COST: DoubleArray = generateNBlocksFallCost()
-  val ONE_UP_LADDER_COST: Double = 1 / (0.12 * 9.8)
-  val ONE_DOWN_LADDER_COST: Double = 1 / 0.15
 
-  val JUMP_ONE_BLOCK_COST: Double
+  private val SPRINT_SPEED = 0.2806
 
-  val ONE_BLOCK_WALK_COST = 1 / actionTime(getWalkingFriction(walkingMovementFactor))
-  val ONE_BLOCK_SPRINT_COST = 1 / actionTime(getWalkingFriction(sprintMovementFactor))
-  val ONE_BLOCK_SNEAK_COST = 1 / actionTime(getWalkingFriction(sneakingMovementFactor))
+  val SPRINT_ONE_BLOCK_TIME = 1.0 / SPRINT_SPEED
+  val SPRINT_DIAGONAL_TIME = SPRINT_ONE_BLOCK_TIME * 1.414
 
-  val ONE_BLOCK_WALK_IN_WATER_COST = 20 * actionTime(getWalkingInWaterFriction(walkingMovementFactor))
-  val ONE_BLOCK_WALK_OVER_SOUL_SAND_COST = ONE_BLOCK_WALK_COST * 2
+  val JUMP_UP_ONE_BLOCK_TIME: Double
+  val MOMENTUM_LOSS_PENALTY = 6.0
 
-  val WALK_OFF_ONE_BLOCK_COST = ONE_BLOCK_WALK_COST * 0.8
-  val CENTER_AFTER_FALL_COST = ONE_BLOCK_WALK_COST * 0.2
+  val SLAB_ASCENT_TIME = SPRINT_ONE_BLOCK_TIME * 1.1
 
-  val SPRINT_MULTIPLIER = walkingMovementFactor / sprintMovementFactor
+  private val fallTimes: DoubleArray = generateFallTimes()
+  val WALK_OFF_EDGE_TIME = SPRINT_ONE_BLOCK_TIME * 0.5
+  val LAND_RECOVERY_TIME = 2.0
 
   init {
-    var vel = 0.42 + (jumpBoostAmplifier + 1) * 0.1
-    var height = 0.0
-    var time = 1.0
+    var vel = 0.42 + (jumpBoostAmplifier + 1).coerceAtLeast(0) * 0.1
+    var jumpTicks = 0.0
 
-    for (i in 1..20) {
-      height += vel
+    while (vel > 0) {
       vel = (vel - 0.08) * 0.98
-      if (vel < 0)
-        break
-      time++
+      jumpTicks++
     }
 
-    JUMP_ONE_BLOCK_COST = time + fallDistanceToTicks(height - 1)
+    JUMP_UP_ONE_BLOCK_TIME = jumpTicks + MOMENTUM_LOSS_PENALTY + SPRINT_ONE_BLOCK_TIME
   }
 
-  private fun getWalkingFriction(landMovementFactor: Double): Double {
-    return landMovementFactor * ((0.16277136) / (0.91 * 0.91 * 0.91))
-  }
-
-  private fun getWalkingInWaterFriction(landMovementFactor: Double): Double {
-    return 0.02 + (landMovementFactor - 0.02) * (1.0 / 3.0)
-  }
-
-  private fun actionTime(friction: Double): Double {
-    return friction * 10
-  }
-
-  fun motionYAtTick(tick: Int): Double {
-    var velocity = -0.0784000015258789
-    for (i in 1..tick) {
-      velocity = (velocity - 0.08) * 0.9800000190734863
-    }
-    return velocity
-  }
-
-  fun fallDistanceToTicks(distance: Double): Double {
-    if (distance == 0.0) return 0.0
-    var tmpDistance = distance
-    var tickCount = 0
-    while (true) {
-      val fallDistance = downwardMotionAtTick(tickCount)
-      if (tmpDistance <= fallDistance) {
-        return tickCount + tmpDistance / fallDistance
-      }
-      tmpDistance -= fallDistance
-      tickCount++
-    }
-  }
-
-  private fun downwardMotionAtTick(tick: Int): Double {
-    return (0.98.pow(tick.toDouble()) - 1) * -3.92
-  }
-
-  private fun generateNBlocksFallCost(): DoubleArray {
-    val timeCost = DoubleArray(257)
+  private fun generateFallTimes(): DoubleArray {
+    val times = DoubleArray(257)
     var currentDistance = 0.0
-    var targetDistance = 1
-    var tickCount = 0
+    var tick = 0
+    var velocity = 0.0
 
-    while (true) {
-      val velocityAtTick = downwardMotionAtTick(tickCount)
-
-      if (currentDistance + velocityAtTick >= targetDistance) {
-        timeCost[targetDistance] =
-          tickCount + (targetDistance - currentDistance) / velocityAtTick
-        targetDistance++
-        if (targetDistance > 256) break
-        continue
+    for (targetDistance in 1..256) {
+      while (currentDistance < targetDistance) {
+        velocity = (velocity - 0.08) * 0.98
+        currentDistance -= velocity
+        tick++
       }
-
-      currentDistance += velocityAtTick
-      tickCount++
+      times[targetDistance] = tick.toDouble()
     }
-    return timeCost
+
+    return times
   }
 
+  fun getFallTime(blocks: Int): Double {
+    if (blocks <= 0) return 0.0
+    if (blocks >= fallTimes.size) return INF_COST
+    return fallTimes[blocks] + LAND_RECOVERY_TIME
+  }
 }
