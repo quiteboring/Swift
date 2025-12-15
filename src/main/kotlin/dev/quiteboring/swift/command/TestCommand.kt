@@ -34,10 +34,22 @@ object TestCommand {
 
           val player = PlayerUtils.getBlockStandingOn() ?: return@executes 1
           val ctx = CalculationContext()
-          val goal = Goal(x, y, z, ctx)
+          
+          var goalY = y
+          val goalPos = BlockPos(x, y, z)
+          val goalState = ctx.get(x, y, z)
+          if (goalState != null && !goalState.getCollisionShape(ctx.world, goalPos).isEmpty) {
+             goalY++
+          }
+
+          val goal = Goal(x, goalY, z, ctx)
+
+          val startX = player.x
+          val startY = player.y + 1
+          val startZ = player.z
 
           this.path = AStarPathfinder(
-            player.x, player.y, player.z, goal, ctx
+            startX, startY, startZ, goal, ctx
           ).findPath()
 
           this.path?.let { println("${it.timeTaken} ms") }

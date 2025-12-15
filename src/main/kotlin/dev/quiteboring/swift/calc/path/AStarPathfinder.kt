@@ -34,6 +34,7 @@ class AStarPathfinder(
 
     while (!openSet.isEmpty()) {
       val currentNode = openSet.poll()
+      // println("Popped node: ${currentNode.x}, ${currentNode.y}, ${currentNode.z} (Cost: ${currentNode.gCost})")
 
       if (goal.isAtGoal(currentNode.x, currentNode.y, currentNode.z)) {
         return Path(currentNode, System.currentTimeMillis() - startTime)
@@ -45,7 +46,12 @@ class AStarPathfinder(
 
         val cost = res.cost
 
-        if (cost >= ctx.cost.INF_COST) continue
+        if (cost >= ctx.cost.INF_COST) {
+            // println("Move ${move} failed. Cost infinite.")
+            continue
+        }
+        // println("Move ${move} succeeded to ${res.x}, ${res.y}, ${res.z} cost $cost")
+
         val neighbourNode = getNode(res.x, res.y, res.z, PathNode.Companion.longHash(res.x, res.y, res.z))
         val neighbourCostSoFar = currentNode.gCost + cost
 
@@ -63,7 +69,7 @@ class AStarPathfinder(
       }
     }
 
-    println("Unable to generate a path.")
+    println("Unable to generate a path. OpenSet empty. ClosedSet size: ${closedSet.size}")
     return null
   }
 

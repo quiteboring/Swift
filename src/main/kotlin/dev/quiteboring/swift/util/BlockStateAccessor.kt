@@ -35,13 +35,7 @@ class BlockStateAccessor(
   }
 
   fun getFromChunk(chunk: Chunk, x: Int, y: Int, z: Int): BlockState {
-    val section: ChunkSection = chunk.sectionArray[y shr 4]
-
-    if (section.isEmpty) {
-      return air
-    }
-
-    return section.getBlockState(x and 15, y and 15, z and 15)
+    return chunk.getBlockState(BlockPos(x, y, z))
   }
 
 }

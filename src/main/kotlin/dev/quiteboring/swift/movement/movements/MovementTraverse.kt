@@ -3,6 +3,7 @@ package dev.quiteboring.swift.movement.movements
 import dev.quiteboring.swift.movement.CalculationContext
 import dev.quiteboring.swift.movement.Movement
 import dev.quiteboring.swift.movement.MovementResult
+import dev.quiteboring.swift.movement.MovementHelper
 import net.minecraft.util.math.BlockPos
 
 class MovementTraverse(val from: BlockPos, to: BlockPos) : Movement(from, to) {
@@ -25,8 +26,9 @@ class MovementTraverse(val from: BlockPos, to: BlockPos) : Movement(from, to) {
       destZ: Int,
       res: MovementResult
     ) {
+      if(!MovementHelper.isSafe(ctx, destX, y, destZ)) return
       res.set(destX, y, destZ)
-      res.cost = 1.0
+      res.cost = ctx.cost.ONE_BLOCK_WALK_COST
     }
   }
 
