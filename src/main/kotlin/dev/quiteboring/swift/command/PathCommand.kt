@@ -16,8 +16,7 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.Vec3d
 
-object TestCommand {
-
+object PathCommand {
   var path: Path? = null
 
   fun dispatch() {
@@ -27,6 +26,11 @@ object TestCommand {
       val zArg = ClientCommandManager.argument("z", IntegerArgumentType.integer())
 
       val pathfindCommand = ClientCommandManager.literal("pathfind")
+        .then(ClientCommandManager.literal("clear").executes {
+          path = null
+          println("Rendering cleared!")
+          1
+        })
         .then(xArg.then(yArg.then(zArg.executes { context ->
           val x = IntegerArgumentType.getInteger(context, "x")
           val y = IntegerArgumentType.getInteger(context, "y")
@@ -39,7 +43,7 @@ object TestCommand {
           val goalPos = BlockPos(x, y, z)
           val goalState = ctx.get(x, y, z)
           if (goalState != null && !goalState.getCollisionShape(ctx.world, goalPos).isEmpty) {
-             goalY++
+            goalY++
           }
 
           val goal = Goal(x, goalY, z, ctx)
@@ -60,6 +64,7 @@ object TestCommand {
     }
   }
 
+  private const val PATH_ALPHA = 100
   fun onRender(ctx: Context) {
     val pathPoints = path?.points ?: return
     var previous: BlockPos? = null
@@ -74,14 +79,14 @@ object TestCommand {
         pos.z.toDouble() + 1.0
       )
 
-      ctx.drawBox(box, Color.CYAN, esp = true)
+      ctx.drawBox(box, Color(0, 255, 255, PATH_ALPHA), esp = false)
 
       previous?.let { prev ->
         ctx.drawLine(
           Vec3d(prev.x + 0.5, prev.y + 0.5, prev.z + 0.5),
           Vec3d(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5),
-          Color.MAGENTA,
-          esp = true,
+          Color(255, 0, 255, PATH_ALPHA),
+          esp = false,
           thickness = 2f
         )
       }

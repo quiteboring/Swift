@@ -1,4 +1,3 @@
-// VIBECODED HEATMAP. I DON'T WANT TO MAKE THIS MYSELF!
 package dev.quiteboring.swift.command
 
 import com.mojang.brigadier.arguments.IntegerArgumentType
@@ -6,19 +5,21 @@ import dev.quiteboring.swift.event.Context
 import dev.quiteboring.swift.movement.CalculationContext
 import dev.quiteboring.swift.movement.MovementHelper
 import dev.quiteboring.swift.util.PlayerUtils
-import dev.quiteboring.swift.util.render.drawBox
+import dev.quiteboring.swift.util.render.drawBoxes
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.minecraft.block.CarpetBlock
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
 import java.awt.Color
+import kotlin.math.abs
 
 object HeatmapCommand {
 
   private var heatmapData: HeatmapData? = null
   private var showHeatmap = false
   private var heatmapMode = HeatmapMode.PENALTY
+  private const val HEATMAP_ALPHA = 100
 
   enum class HeatmapMode {
     PENALTY,
@@ -71,32 +72,33 @@ object HeatmapCommand {
           println("Heatmap: $showHeatmap")
           1
         })
-        .then(ClientCommandManager.literal("mode")
-          .then(ClientCommandManager.literal("penalty").executes {
-            heatmapMode = HeatmapMode.PENALTY
-            println("Mode: PENALTY (total cost)")
-            1
-          })
-          .then(ClientCommandManager.literal("edge").executes {
-            heatmapMode = HeatmapMode.EDGE
-            println("Mode: EDGE (drop distance)")
-            1
-          })
-          .then(ClientCommandManager.literal("wall").executes {
-            heatmapMode = HeatmapMode.WALL
-            println("Mode: WALL (wall distance)")
-            1
-          })
-          .then(ClientCommandManager.literal("corridor").executes {
-            heatmapMode = HeatmapMode.CORRIDOR
-            println("Mode: CORRIDOR (center offset)")
-            1
-          })
-          .then(ClientCommandManager.literal("debug").executes {
-            heatmapMode = HeatmapMode.DEBUG
-            println("Mode: DEBUG (highlight anomalies)")
-            1
-          })
+        .then(
+          ClientCommandManager.literal("mode")
+            .then(ClientCommandManager.literal("penalty").executes {
+              heatmapMode = HeatmapMode.PENALTY
+              println("Mode: PENALTY (total cost)")
+              1
+            })
+            .then(ClientCommandManager.literal("edge").executes {
+              heatmapMode = HeatmapMode.EDGE
+              println("Mode: EDGE (drop distance)")
+              1
+            })
+            .then(ClientCommandManager.literal("wall").executes {
+              heatmapMode = HeatmapMode.WALL
+              println("Mode: WALL (wall distance)")
+              1
+            })
+            .then(ClientCommandManager.literal("corridor").executes {
+              heatmapMode = HeatmapMode.CORRIDOR
+              println("Mode: CORRIDOR (center offset)")
+              1
+            })
+            .then(ClientCommandManager.literal("debug").executes {
+              heatmapMode = HeatmapMode.DEBUG
+              println("Mode: DEBUG (highlight anomalies)")
+              1
+            })
         )
         .then(ClientCommandManager.literal("inspect").executes {
           inspectPlayerPosition()
@@ -130,7 +132,7 @@ object HeatmapCommand {
 
     val edgeDist = ctx.wallDistance.getEdgeDistance(x, y, z)
     val wallDist = ctx.wallDistance.getWallDistance(x, y, z)
-    val (minWall, corridorWidth, centerOffset) = ctx.wallDistance.getCorridorInfo(x, y, z)
+    val (_, corridorWidth, centerOffset) = ctx.wallDistance.getCorridorInfo(x, y, z)
     val penalty = ctx.wallDistance.getPathPenalty(x, y, z)
 
     val dirDists = ctx.wallDistance.getDirectionalWallDistances(x, y, z)
@@ -174,6 +176,8 @@ object HeatmapCommand {
     val data = HeatmapData(playerPos, radius, ctx)
     val startTime = System.currentTimeMillis()
 
+    val verticalSearchOrder = (-10..10).sortedBy { abs(it) }
+
     for (dx in -radius..radius) {
       for (dz in -radius..radius) {
         if (dx * dx + dz * dz > radius * radius) continue
@@ -181,16 +185,12 @@ object HeatmapCommand {
         val x = playerPos.x + dx
         val z = playerPos.z + dz
 
-        for (dy in 15 downTo -15) {
-          var y = playerPos.y + dy
+        for (dy in verticalSearchOrder) {
+          val y = playerPos.y + dy + 1
 
           if (MovementHelper.isSafe(ctx, x, y, z)) {
             val groundState = ctx.get(x, y - 1, z)
-            val renderY = if (groundState?.block is CarpetBlock) {
-              y
-            } else {
-              y
-            }
+            val renderY = if (groundState?.block is CarpetBlock) y else y
 
             val edgeDist = ctx.wallDistance.getEdgeDistance(x, y, z)
             val wallDist = ctx.wallDistance.getWallDistance(x, y, z)
@@ -239,20 +239,20 @@ object HeatmapCommand {
 
   private fun debugColor(point: HeatmapPoint): Color {
     if (point.penalty > 10 && point.edgeDist >= 3 && point.wallDist >= 2) {
-      return Color(255, 0, 255, 200)
+      return Color(255, 0, 255, HEATMAP_ALPHA)
     }
     return penaltyToColor(point.penalty)
   }
 
   private fun penaltyToColor(penalty: Double): Color {
     return when {
-      penalty <= 0.5 -> Color(0, 255, 0, 150)
-      penalty <= 2.0 -> Color(100, 255, 0, 140)
-      penalty <= 5.0 -> Color(180, 255, 0, 130)
-      penalty <= 10.0 -> Color(255, 255, 0, 140)
-      penalty <= 20.0 -> Color(255, 150, 0, 150)
-      penalty <= 35.0 -> Color(255, 80, 0, 160)
-      else -> Color(255, 0, 0, 180)
+      penalty <= 0.5 -> Color(0, 255, 0, HEATMAP_ALPHA)
+      penalty <= 2.0 -> Color(100, 255, 0, HEATMAP_ALPHA)
+      penalty <= 5.0 -> Color(180, 255, 0, HEATMAP_ALPHA)
+      penalty <= 10.0 -> Color(255, 255, 0, HEATMAP_ALPHA)
+      penalty <= 20.0 -> Color(255, 150, 0, HEATMAP_ALPHA)
+      penalty <= 35.0 -> Color(255, 80, 0, HEATMAP_ALPHA)
+      else -> Color(255, 0, 0, HEATMAP_ALPHA)
     }
   }
 
@@ -260,23 +260,23 @@ object HeatmapCommand {
     val ratio = (dist.toFloat() / max).coerceIn(0f, 1f)
     val r = ((1 - ratio) * 255).toInt()
     val g = (ratio * 255).toInt()
-    return Color(r, g, 0, 160)
+    return Color(r, g, 0, HEATMAP_ALPHA)
   }
 
   private fun corridorToColor(corridorWidth: Int, centerOffset: Int): Color {
     if (corridorWidth == 0) {
-      return Color(100, 100, 255, 120)
+      return Color(100, 100, 255, HEATMAP_ALPHA)
     }
 
     val halfWidth = corridorWidth / 2.0
     val offCenterRatio = if (halfWidth > 0) centerOffset / halfWidth else 0.0
 
     return when {
-      offCenterRatio <= 0.3 -> Color(0, 255, 0, 160)
-      offCenterRatio <= 0.5 -> Color(150, 255, 0, 150)
-      offCenterRatio <= 0.7 -> Color(255, 255, 0, 150)
-      offCenterRatio <= 0.85 -> Color(255, 150, 0, 160)
-      else -> Color(255, 50, 0, 170)
+      offCenterRatio <= 0.3 -> Color(0, 255, 0, HEATMAP_ALPHA)
+      offCenterRatio <= 0.5 -> Color(150, 255, 0, HEATMAP_ALPHA)
+      offCenterRatio <= 0.7 -> Color(255, 255, 0, HEATMAP_ALPHA)
+      offCenterRatio <= 0.85 -> Color(255, 150, 0, HEATMAP_ALPHA)
+      else -> Color(255, 50, 0, HEATMAP_ALPHA)
     }
   }
 
@@ -284,12 +284,26 @@ object HeatmapCommand {
     if (!showHeatmap) return
     val data = heatmapData ?: return
 
-    for (point in data.points) {
-      val box = Box(
-        point.x + 0.1, point.y.toDouble(), point.z + 0.1,
-        point.x + 0.9, point.y + 0.05, point.z + 0.9
-      )
-      ctx.drawBox(box, getColor(point), esp = true)
+    val client = net.minecraft.client.MinecraftClient.getInstance()
+    val world = client.world ?: return
+
+    val boxes = data.points.map { point ->
+      val blockPos = BlockPos(point.x, point.y - 1, point.z)
+      val blockState = world.getBlockState(blockPos)
+      val shape = blockState.getOutlineShape(world, blockPos)
+
+      val box = if (!shape.isEmpty()) {
+        shape.boundingBox.offset(blockPos.x.toDouble(), blockPos.y.toDouble(), blockPos.z.toDouble())
+      } else {
+        Box(
+          point.x.toDouble(), (point.y - 1).toDouble(), point.z.toDouble(),
+          point.x + 1.0, point.y.toDouble(), point.z + 1.0
+        )
+      }
+
+      box to getColor(point)
     }
+
+    ctx.drawBoxes(boxes, esp = false)
   }
 }
