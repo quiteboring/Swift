@@ -7,8 +7,8 @@ import dev.quiteboring.swift.event.Context
 import dev.quiteboring.swift.goal.Goal
 import dev.quiteboring.swift.movement.CalculationContext
 import dev.quiteboring.swift.util.PlayerUtils
-import dev.quiteboring.swift.util.render.drawBox
-import dev.quiteboring.swift.util.render.drawLine
+import dev.quiteboring.swift.util.render.drawBoxes
+import dev.quiteboring.swift.util.render.drawLines
 import java.awt.Color
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
@@ -17,7 +17,15 @@ import net.minecraft.util.math.Box
 import net.minecraft.util.math.Vec3d
 
 object PathCommand {
-  var path: Path? = null
+  private var path: Path? = null
+
+  private var cachedBoxes: List<Pair<Box, Color>>? = null
+  private var cachedLines: List<Triple<Vec3d, Vec3d, Color>>? = null
+  private var cachedPathHash: Int = 0
+
+  private const val PATH_ALPHA = 100
+  private val BOX_COLOR = Color(0, 255, 255, PATH_ALPHA)
+  private val LINE_COLOR = Color(255, 0, 255, PATH_ALPHA)
 
   fun dispatch() {
     ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
@@ -27,7 +35,7 @@ object PathCommand {
 
       val pathfindCommand = ClientCommandManager.literal("pathfind")
         .then(ClientCommandManager.literal("clear").executes {
-          path = null
+          clearPath()
           println("Rendering cleared!")
           1
         })
@@ -52,11 +60,10 @@ object PathCommand {
           val startY = player.y + 1
           val startZ = player.z
 
-          this.path = AStarPathfinder(
-            startX, startY, startZ, goal, ctx
-          ).findPath()
+          val newPath = AStarPathfinder(startX, startY, startZ, goal, ctx).findPath()
+          setPath(newPath)
 
-          this.path?.let { println("${it.timeTaken} ms") }
+          newPath?.let { println("${it.timeTaken} ms") }
           return@executes 1
         })))
 
@@ -64,12 +71,29 @@ object PathCommand {
     }
   }
 
-  private const val PATH_ALPHA = 100
-  fun onRender(ctx: Context) {
-    val pathPoints = path?.points ?: return
+  private fun setPath(newPath: Path?) {
+    path = newPath
+    invalidateCache()
+  }
+
+  private fun clearPath() {
+    path = null
+    invalidateCache()
+  }
+
+  private fun invalidateCache() {
+    cachedBoxes = null
+    cachedLines = null
+    cachedPathHash = 0
+  }
+
+  private fun buildCache(pathPoints: List<BlockPos>): Pair<List<Pair<Box, Color>>, List<Triple<Vec3d, Vec3d, Color>>> {
+    val boxes = ArrayList<Pair<Box, Color>>(pathPoints.size)
+    val lines = ArrayList<Triple<Vec3d, Vec3d, Color>>(pathPoints.size - 1)
+
     var previous: BlockPos? = null
 
-    pathPoints.forEach { pos ->
+    for (pos in pathPoints) {
       val box = Box(
         pos.x.toDouble(),
         pos.y.toDouble(),
@@ -78,21 +102,36 @@ object PathCommand {
         pos.y.toDouble() + 1.0,
         pos.z.toDouble() + 1.0
       )
-
-      ctx.drawBox(box, Color(0, 255, 255, PATH_ALPHA), esp = false)
+      boxes.add(box to BOX_COLOR)
 
       previous?.let { prev ->
-        ctx.drawLine(
-          Vec3d(prev.x + 0.5, prev.y + 0.5, prev.z + 0.5),
-          Vec3d(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5),
-          Color(255, 0, 255, PATH_ALPHA),
-          esp = false,
-          thickness = 2f
+        lines.add(
+          Triple(
+            Vec3d(prev.x + 0.5, prev.y + 0.5, prev.z + 0.5),
+            Vec3d(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5),
+            LINE_COLOR
+          )
         )
       }
-
       previous = pos
     }
+
+    return boxes to lines
   }
 
+  fun onRender(ctx: Context) {
+    val currentPath = path ?: return
+    val pathPoints = currentPath.points
+    val pathHash = System.identityHashCode(currentPath)
+
+    if (cachedBoxes == null || cachedPathHash != pathHash) {
+      val (boxes, lines) = buildCache(pathPoints)
+      cachedBoxes = boxes
+      cachedLines = lines
+      cachedPathHash = pathHash
+    }
+
+    cachedBoxes?.let { ctx.drawBoxes(it, esp = false) }
+    cachedLines?.let { ctx.drawLines(it, esp = false, thickness = 2f) }
+  }
 }
