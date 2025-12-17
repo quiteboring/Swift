@@ -1,23 +1,19 @@
 package dev.quiteboring.swift.costs
 
 class ActionCosts(
-  private val jumpBoostAmplifier: Int = -1
+  jumpBoostAmplifier: Int = -1
 ) {
+
   val INF_COST = 1e6
-
-  private val SPRINT_SPEED = 0.2806
-
-  val SPRINT_ONE_BLOCK_TIME = 1.0 / SPRINT_SPEED
+  val SPRINT_ONE_BLOCK_TIME = 1.0 / 0.2806
   val SPRINT_DIAGONAL_TIME = SPRINT_ONE_BLOCK_TIME * 1.414
-
   val JUMP_UP_ONE_BLOCK_TIME: Double
   val MOMENTUM_LOSS_PENALTY = 6.0
-
   val SLAB_ASCENT_TIME = SPRINT_ONE_BLOCK_TIME * 1.1
-
-  private val fallTimes: DoubleArray = generateFallTimes()
   val WALK_OFF_EDGE_TIME = SPRINT_ONE_BLOCK_TIME * 0.5
   val LAND_RECOVERY_TIME = 2.0
+
+  private val fallTimes: DoubleArray = generateFallTimes()
 
   init {
     var vel = 0.42 + (jumpBoostAmplifier + 1).coerceAtLeast(0) * 0.1
@@ -54,4 +50,5 @@ class ActionCosts(
     if (blocks >= fallTimes.size) return INF_COST
     return fallTimes[blocks] + LAND_RECOVERY_TIME
   }
+
 }

@@ -21,7 +21,7 @@ class MovementTraverse(val from: BlockPos, to: BlockPos) : Movement(from, to) {
       if (!MovementHelper.isPassable(ctx, destX, y + 1, destZ)) return
 
       res.set(destX, y, destZ)
-      res.cost = ctx.cost.SPRINT_ONE_BLOCK_TIME + ctx.wallDistance.getPathPenalty(destX, y, destZ)
+      res.cost = ctx.cost.SPRINT_ONE_BLOCK_TIME
     }
   }
 }

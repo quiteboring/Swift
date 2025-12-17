@@ -6,6 +6,7 @@ import net.minecraft.block.StairsBlock
 import net.minecraft.util.math.BlockPos
 
 class MovementAscend(val from: BlockPos, to: BlockPos) : Movement(from, to) {
+
   override fun calculateCost(ctx: CalculationContext, res: MovementResult) {
     calculateCost(ctx, source.x, source.y, source.z, target.x, target.z, res)
     costs = res.cost
@@ -26,15 +27,12 @@ class MovementAscend(val from: BlockPos, to: BlockPos) : Movement(from, to) {
       val groundState = ctx.get(destX, y, destZ)
       val block = groundState?.block
 
-      val baseCost = if (block is SlabBlock || block is StairsBlock) {
+      res.cost = if (block is SlabBlock || block is StairsBlock) {
         ctx.cost.SLAB_ASCENT_TIME
       } else {
         ctx.cost.JUMP_UP_ONE_BLOCK_TIME
       }
-
-      val edgePenalty = ctx.wallDistance.getPathPenalty(destX, y + 1, destZ)
-
-      res.cost = baseCost + edgePenalty
     }
   }
+
 }

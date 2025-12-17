@@ -1,6 +1,9 @@
 package dev.quiteboring.swift.movement.movements
 
-import dev.quiteboring.swift.movement.*
+import dev.quiteboring.swift.movement.CalculationContext
+import dev.quiteboring.swift.movement.Movement
+import dev.quiteboring.swift.movement.MovementHelper
+import dev.quiteboring.swift.movement.MovementResult
 import net.minecraft.util.math.BlockPos
 
 class MovementDescend(val from: BlockPos, to: BlockPos) : Movement(from, to) {
@@ -33,8 +36,6 @@ class MovementDescend(val from: BlockPos, to: BlockPos) : Movement(from, to) {
           if (fallDist > 3) {
             cost += (fallDist - 3) * (fallDist - 3) * 2.0
           }
-
-          cost += ctx.wallDistance.getPathPenalty(destX, destY, destZ)
 
           res.cost = cost
           return

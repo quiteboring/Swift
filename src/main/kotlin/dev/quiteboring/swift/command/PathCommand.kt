@@ -7,12 +7,12 @@ import dev.quiteboring.swift.event.Context
 import dev.quiteboring.swift.goal.Goal
 import dev.quiteboring.swift.movement.CalculationContext
 import dev.quiteboring.swift.util.PlayerUtils
-import dev.quiteboring.swift.util.render.drawBoxes
-import dev.quiteboring.swift.util.render.drawLines
+import dev.quiteboring.swift.util.render.drawBox
 import java.awt.Color
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
-import net.minecraft.util.math.BlockPos
+import net.minecraft.client.MinecraftClient
+import net.minecraft.text.Text
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.Vec3d
 
@@ -35,8 +35,8 @@ object PathCommand {
 
       val pathfindCommand = ClientCommandManager.literal("pathfind")
         .then(ClientCommandManager.literal("clear").executes {
-          clearPath()
-          println("Rendering cleared!")
+          this.path = null
+          MinecraftClient.getInstance().inGameHud.chatHud.addMessage(Text.of("Rendering Cleared"))
           1
         })
         .then(xArg.then(yArg.then(zArg.executes { context ->
@@ -47,23 +47,14 @@ object PathCommand {
           val player = PlayerUtils.getBlockStandingOn() ?: return@executes 1
           val ctx = CalculationContext()
 
-          var goalY = y
-          val goalPos = BlockPos(x, y, z)
-          val goalState = ctx.get(x, y, z)
-          if (goalState != null && !goalState.getCollisionShape(ctx.world, goalPos).isEmpty) {
-            goalY++
+          AStarPathfinder(
+            player.x, player.y, player.z,
+            Goal(x, y, z, ctx), ctx
+          ).findPath()?.let {
+            this.path = it
+            MinecraftClient.getInstance().inGameHud.chatHud.addMessage(Text.of("${it.timeTaken} ms"))
           }
 
-          val goal = Goal(x, goalY, z, ctx)
-
-          val startX = player.x
-          val startY = player.y + 1
-          val startZ = player.z
-
-          val newPath = AStarPathfinder(startX, startY, startZ, goal, ctx).findPath()
-          setPath(newPath)
-
-          newPath?.let { println("${it.timeTaken} ms") }
           return@executes 1
         })))
 
@@ -71,67 +62,17 @@ object PathCommand {
     }
   }
 
-  private fun setPath(newPath: Path?) {
-    path = newPath
-    invalidateCache()
-  }
-
-  private fun clearPath() {
-    path = null
-    invalidateCache()
-  }
-
-  private fun invalidateCache() {
-    cachedBoxes = null
-    cachedLines = null
-    cachedPathHash = 0
-  }
-
-  private fun buildCache(pathPoints: List<BlockPos>): Pair<List<Pair<Box, Color>>, List<Triple<Vec3d, Vec3d, Color>>> {
-    val boxes = ArrayList<Pair<Box, Color>>(pathPoints.size)
-    val lines = ArrayList<Triple<Vec3d, Vec3d, Color>>(pathPoints.size - 1)
-
-    var previous: BlockPos? = null
-
-    for (pos in pathPoints) {
-      val box = Box(
-        pos.x.toDouble(),
-        pos.y.toDouble(),
-        pos.z.toDouble(),
-        pos.x.toDouble() + 1.0,
-        pos.y.toDouble() + 1.0,
-        pos.z.toDouble() + 1.0
-      )
-      boxes.add(box to BOX_COLOR)
-
-      previous?.let { prev ->
-        lines.add(
-          Triple(
-            Vec3d(prev.x + 0.5, prev.y + 0.5, prev.z + 0.5),
-            Vec3d(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5),
-            LINE_COLOR
-          )
-        )
-      }
-      previous = pos
-    }
-
-    return boxes to lines
-  }
-
   fun onRender(ctx: Context) {
-    val currentPath = path ?: return
-    val pathPoints = currentPath.points
-    val pathHash = System.identityHashCode(currentPath)
+    path?.let {
+      it.points.forEach { pos ->
+        val box = Box(
+          pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble(),
+          pos.x + 1.0, pos.y + 1.0, pos.z + 1.0
+        )
 
-    if (cachedBoxes == null || cachedPathHash != pathHash) {
-      val (boxes, lines) = buildCache(pathPoints)
-      cachedBoxes = boxes
-      cachedLines = lines
-      cachedPathHash = pathHash
+        ctx.drawBox(box, color = Color(255, 132, 94))
+      }
     }
-
-    cachedBoxes?.let { ctx.drawBoxes(it, esp = false) }
-    cachedLines?.let { ctx.drawLines(it, esp = false, thickness = 2f) }
   }
+
 }

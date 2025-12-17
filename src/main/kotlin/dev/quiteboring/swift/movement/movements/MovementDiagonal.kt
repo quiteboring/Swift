@@ -22,11 +22,7 @@ class MovementDiagonal(val from: BlockPos, to: BlockPos) : Movement(from, to) {
       if (MovementHelper.isSolid(ctx, x, y + 1, destZ) || MovementHelper.isSolid(ctx, destX, y + 1, z)) return
 
       res.set(destX, y, destZ)
-
-      var cost = ctx.cost.SPRINT_DIAGONAL_TIME
-      cost += ctx.wallDistance.getPathPenalty(destX, y, destZ)
-
-      res.cost = cost
+      res.cost = ctx.cost.SPRINT_DIAGONAL_TIME
     }
   }
 }

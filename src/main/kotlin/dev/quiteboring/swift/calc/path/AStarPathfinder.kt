@@ -32,33 +32,15 @@ class AStarPathfinder(
     openSet.add(startNode)
 
     val startTime = System.currentTimeMillis()
-    var iterations = 0
-    val timeCheckMask = 0x3FF
 
     while (!openSet.isEmpty()) {
-      iterations++
-
-      if (iterations > maxIterations) {
-        println("Pathfinding exceeded max iterations: $iterations, nodes: ${nodeMap.size}")
-        return findBestPartialPath(startTime)
-      }
-
-      if ((iterations and timeCheckMask) == 0) {
-        if (System.currentTimeMillis() - startTime > timeoutMs) {
-          println("Pathfinding timed out after ${System.currentTimeMillis() - startTime}ms")
-          return findBestPartialPath(startTime)
-        }
-      }
-
       val current = openSet.poll()
       val cx = current.x
       val cy = current.y
       val cz = current.z
 
       if (goal.isAtGoal(cx, cy, cz)) {
-        val elapsed = System.currentTimeMillis() - startTime
-        println("Path found! ${iterations} iterations, ${elapsed}ms, ${nodeMap.size} nodes")
-        return Path(current, elapsed)
+        return Path(current, System.currentTimeMillis() - startTime)
       }
 
       val currentCost = current.gCost
@@ -91,7 +73,6 @@ class AStarPathfinder(
       }
     }
 
-    println("No path found. Explored ${nodeMap.size} nodes in ${System.currentTimeMillis() - startTime}ms")
     return null
   }
 
