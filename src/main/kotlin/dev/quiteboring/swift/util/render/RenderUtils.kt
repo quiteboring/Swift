@@ -3,6 +3,8 @@ package dev.quiteboring.swift.util.render
 import com.mojang.blaze3d.systems.RenderSystem
 import dev.quiteboring.swift.event.Context
 import java.awt.Color
+import kotlin.math.max
+import kotlin.math.min
 import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.client.render.VertexRendering
 import net.minecraft.util.math.Box
@@ -55,12 +57,11 @@ fun Context.drawLine(
   esp: Boolean = false,
   thickness: Float = 2f,
 ) {
-  if (
-    !FrustumUtils.isVisible(this.frustum, start.x, start.y, start.z, start.x, start.y, start.z) ||
-    !FrustumUtils.isVisible(this.frustum, end.x, end.y, end.z, end.x, end.y, end.z)
-  ) {
-    return
-  }
+  if (!FrustumUtils.isVisible(
+    frustum,
+    min(start.x, end.x), min(start.y, end.y), min(start.z, end.z),
+    max(start.x, end.x), max(start.y, end.y), max(start.z, end.z)
+  )) return
 
   val matrix = matrixStack ?: return
   val bufferSource = consumers as? VertexConsumerProvider.Immediate ?: return

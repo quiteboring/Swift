@@ -1,13 +1,14 @@
 package dev.quiteboring.swift.command
 
 import com.mojang.brigadier.arguments.IntegerArgumentType
-import dev.quiteboring.swift.calc.Path
-import dev.quiteboring.swift.calc.path.AStarPathfinder
+import dev.quiteboring.swift.calculate.Path
+import dev.quiteboring.swift.calculate.path.AStarPathfinder
 import dev.quiteboring.swift.event.Context
 import dev.quiteboring.swift.goal.Goal
 import dev.quiteboring.swift.movement.CalculationContext
 import dev.quiteboring.swift.util.PlayerUtils
 import dev.quiteboring.swift.util.render.drawBox
+import dev.quiteboring.swift.util.render.drawLine
 import java.awt.Color
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
@@ -22,10 +23,6 @@ object PathCommand {
   private var cachedBoxes: List<Pair<Box, Color>>? = null
   private var cachedLines: List<Triple<Vec3d, Vec3d, Color>>? = null
   private var cachedPathHash: Int = 0
-
-  private const val PATH_ALPHA = 100
-  private val BOX_COLOR = Color(0, 255, 255, PATH_ALPHA)
-  private val LINE_COLOR = Color(255, 0, 255, PATH_ALPHA)
 
   fun dispatch() {
     ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
@@ -64,13 +61,26 @@ object PathCommand {
 
   fun onRender(ctx: Context) {
     path?.let {
+      var prev: Vec3d? = null
+
       it.points.forEach { pos ->
+        val center = Vec3d(
+          pos.x + 0.5,
+          pos.y + 1.0,
+          pos.z + 0.5
+        )
+
+        prev?.let { vec ->
+          ctx.drawLine(vec, center, color = Color(255, 132, 94), thickness = 1F)
+        }
+
         val box = Box(
           pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble(),
           pos.x + 1.0, pos.y + 1.0, pos.z + 1.0
         )
 
-        ctx.drawBox(box, esp = true, color = Color(255, 132, 94))
+        ctx.drawBox(box, color = Color(255, 132, 94))
+        prev = center
       }
     }
   }

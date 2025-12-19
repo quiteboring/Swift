@@ -1,4 +1,4 @@
-package dev.quiteboring.swift.calc
+package dev.quiteboring.swift.calculate
 
 import dev.quiteboring.swift.goal.IGoal
 

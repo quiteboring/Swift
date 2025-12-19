@@ -1,6 +1,6 @@
 package dev.quiteboring.swift.movement
 
-import dev.quiteboring.swift.calc.PathNode
+import dev.quiteboring.swift.calculate.PathNode
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import java.lang.Double.isNaN

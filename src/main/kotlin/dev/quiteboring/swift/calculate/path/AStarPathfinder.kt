@@ -1,8 +1,8 @@
-package dev.quiteboring.swift.calc.path
+package dev.quiteboring.swift.calculate.path
 
-import dev.quiteboring.swift.calc.Path
-import dev.quiteboring.swift.calc.PathNode
-import dev.quiteboring.swift.calc.openset.BinaryHeapOpenSet
+import dev.quiteboring.swift.calculate.Path
+import dev.quiteboring.swift.calculate.PathNode
+import dev.quiteboring.swift.calculate.openset.BinaryHeapOpenSet
 import dev.quiteboring.swift.goal.IGoal
 import dev.quiteboring.swift.movement.CalculationContext
 import dev.quiteboring.swift.movement.MovementResult
