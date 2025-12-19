@@ -1,4 +1,4 @@
-package dev.quiteboring.swift.calculate
+package dev.quiteboring.swift.finder.calculate
 
 import net.minecraft.util.math.BlockPos
 

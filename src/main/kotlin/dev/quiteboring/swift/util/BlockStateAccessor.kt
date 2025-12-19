@@ -9,33 +9,28 @@ import net.minecraft.world.chunk.ChunkStatus
 
 class BlockStateAccessor(val world: World) {
 
-  private var prevChunk: Chunk? = null
-  private var prevChunkX = Int.MIN_VALUE
-  private var prevChunkZ = Int.MIN_VALUE
-
-  private val bottomY = world.bottomY
-
   val mutablePos: BlockPos.Mutable = BlockPos.Mutable()
 
+  private var prevChunk: Chunk? = null
+
+  private val bottomY = world.bottomY
   private val air: BlockState = Blocks.AIR.defaultState
 
   fun get(x: Int, y: Int, z: Int): BlockState? {
-    val chunkX = x shr 4
-    val chunkZ = z shr 4
+    val cached = prevChunk
 
-    val chunk: Chunk?
-    if (prevChunkX == chunkX && prevChunkZ == chunkZ) {
-      chunk = prevChunk
-    } else {
-      chunk = world.chunkManager.getChunk(chunkX, chunkZ, ChunkStatus.FULL, false)
-      if (chunk != null) {
-        prevChunk = chunk
-        prevChunkX = chunkX
-        prevChunkZ = chunkZ
-      }
+    if (cached != null && cached.getPos().x == x shr 4 && cached.getPos().z == z shr 4) {
+      return getFromChunk(cached, x, y, z)
     }
 
-    return chunk?.let { getFromChunk(it, x, y, z) }
+    val chunk = world.chunkManager.getChunk(x shr 4, z shr 4, ChunkStatus.FULL, false)
+
+    if (chunk != null && !chunk.sectionArray.all { it.isEmpty }) {
+      prevChunk = chunk
+      return getFromChunk(chunk, x, y, z)
+    }
+
+    return null
   }
 
   fun isChunkLoaded(blockX: Int, blockZ: Int): Boolean {

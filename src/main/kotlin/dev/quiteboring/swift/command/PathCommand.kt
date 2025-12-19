@@ -1,11 +1,11 @@
 package dev.quiteboring.swift.command
 
 import com.mojang.brigadier.arguments.IntegerArgumentType
-import dev.quiteboring.swift.calculate.Path
-import dev.quiteboring.swift.calculate.path.AStarPathfinder
+import dev.quiteboring.swift.finder.calculate.Path
+import dev.quiteboring.swift.finder.calculate.path.AStarPathfinder
 import dev.quiteboring.swift.event.Context
-import dev.quiteboring.swift.goal.Goal
-import dev.quiteboring.swift.movement.CalculationContext
+import dev.quiteboring.swift.finder.goal.Goal
+import dev.quiteboring.swift.finder.movement.CalculationContext
 import dev.quiteboring.swift.util.PlayerUtils
 import dev.quiteboring.swift.util.render.drawBox
 import dev.quiteboring.swift.util.render.drawLine
@@ -18,11 +18,8 @@ import net.minecraft.util.math.Box
 import net.minecraft.util.math.Vec3d
 
 object PathCommand {
-  private var path: Path? = null
 
-  private var cachedBoxes: List<Pair<Box, Color>>? = null
-  private var cachedLines: List<Triple<Vec3d, Vec3d, Color>>? = null
-  private var cachedPathHash: Int = 0
+  private var path: Path? = null
 
   fun dispatch() {
     ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->

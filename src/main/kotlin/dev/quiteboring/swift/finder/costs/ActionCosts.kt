@@ -1,4 +1,4 @@
-package dev.quiteboring.swift.costs
+package dev.quiteboring.swift.finder.costs
 
 class ActionCosts(
   jumpBoostAmplifier: Int = -1

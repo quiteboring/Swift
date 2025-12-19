@@ -1,6 +1,6 @@
-package dev.quiteboring.swift.goal
+package dev.quiteboring.swift.finder.goal
 
-import dev.quiteboring.swift.movement.CalculationContext
+import dev.quiteboring.swift.finder.movement.CalculationContext
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min

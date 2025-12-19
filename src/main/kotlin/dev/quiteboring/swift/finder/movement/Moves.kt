@@ -1,6 +1,6 @@
-package dev.quiteboring.swift.movement
+package dev.quiteboring.swift.finder.movement
 
-import dev.quiteboring.swift.movement.movements.*
+import dev.quiteboring.swift.finder.movement.movements.*
 
 enum class Moves(val offsetX: Int, val offsetZ: Int) {
 

@@ -1,11 +1,10 @@
-package dev.quiteboring.swift.movement
+package dev.quiteboring.swift.finder.movement
 
-import dev.quiteboring.swift.calculate.PathNode
+import dev.quiteboring.swift.finder.calculate.PathNode
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
-import java.lang.Double.isNaN
-import kotlin.math.min
 import net.minecraft.block.*
+import kotlin.math.min
 
 /**
  * Thank you EpsilonPhoenix for this superb class!
@@ -39,19 +38,16 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
   private val penaltyCache = Long2DoubleOpenHashMap().apply {
     defaultReturnValue(Double.NaN)
   }
-
   private val edgeCache = Long2IntOpenHashMap().apply { defaultReturnValue(-1) }
   private val wallCache = Long2IntOpenHashMap().apply { defaultReturnValue(-1) }
 
   fun getPathPenalty(x: Int, y: Int, z: Int): Double {
     val key = PathNode.coordKey(x, y, z)
     var penalty = penaltyCache.get(key)
-
-    if (isNaN(penalty)) {
+    if (java.lang.Double.isNaN(penalty)) {
       penalty = computePenalty(x, y, z)
       penaltyCache.put(key, penalty)
     }
-
     return penalty
   }
 
@@ -75,7 +71,6 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
         return d - 1
       }
     }
-
     return MAX_DIST
   }
 
@@ -85,7 +80,6 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
         return d - 1
       }
     }
-
     return MAX_DIST
   }
 
@@ -96,20 +90,18 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
       for (depth in 2..4) {
         val state = ctx.get(x, y - depth, z) ?: continue
         if (state.isAir || state.block is CarpetBlock) continue
-
-        if (MovementHelper.canWalkOn(ctx.bsa, x, y - depth, z, state)) {
+        if (MovementHelper.isSolidState(ctx, state, x, y - depth, z)) {
           return depth >= 3
         }
       }
-
       return true
     }
 
     if (below.block is CarpetBlock) {
-      return !MovementHelper.canWalkOn(ctx.bsa, x, y - 2, z)
+      return !MovementHelper.isSolid(ctx, x, y - 2, z)
     }
 
-    return !MovementHelper.canWalkOn(ctx.bsa, x, y - 1, z, below)
+    return !MovementHelper.isSolidState(ctx, below, x, y - 1, z)
   }
 
   private fun isWall(x: Int, y: Int, z: Int): Boolean {
@@ -118,11 +110,8 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
 
   private fun isBlockingWall(x: Int, y: Int, z: Int): Boolean {
     val state = ctx.get(x, y, z) ?: return false
+    if (state.isAir) return false
     val block = state.block
-
-    if (state.isAir) {
-      return false
-    }
 
     if (
       block is CarpetBlock || block is SlabBlock ||
@@ -144,9 +133,7 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
       return true
     }
 
-    if (MovementHelper.canWalkThrough(ctx.bsa, x, y, z, state)) {
-      return false
-    }
+    if (!MovementHelper.isSolidState(ctx, state, x, y, z)) return false
 
     val shape = state.getCollisionShape(null, null)
     if (shape.isEmpty) return false
@@ -157,32 +144,26 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
   fun getEdgeDistance(x: Int, y: Int, z: Int): Int {
     val key = PathNode.coordKey(x, y, z)
     var dist = edgeCache.get(key)
-
     if (dist == -1) {
       dist = min(
         min(scanForEdge(x, y, z, 0, -1), scanForEdge(x, y, z, 0, 1)),
         min(scanForEdge(x, y, z, 1, 0), scanForEdge(x, y, z, -1, 0))
       )
-
       edgeCache.put(key, dist)
     }
-
     return dist
   }
 
   fun getWallDistance(x: Int, y: Int, z: Int): Int {
     val key = PathNode.coordKey(x, y, z)
     var dist = wallCache.get(key)
-
     if (dist == -1) {
       dist = min(
         min(scanForWall(x, y, z, 0, -1), scanForWall(x, y, z, 0, 1)),
         min(scanForWall(x, y, z, 1, 0), scanForWall(x, y, z, -1, 0))
       )
-
       wallCache.put(key, dist)
     }
-
     return dist
   }
 
