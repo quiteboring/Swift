@@ -63,7 +63,7 @@ object PathCommand {
       it.points.forEach { pos ->
         val center = Vec3d(
           pos.x + 0.5,
-          pos.y + 1.0,
+          pos.y.toDouble(),
           pos.z + 0.5
         )
 
@@ -73,7 +73,7 @@ object PathCommand {
 
         val box = Box(
           pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble(),
-          pos.x + 1.0, pos.y + 1.0, pos.z + 1.0
+          pos.x + 1.0, pos.y - 1.0, pos.z + 1.0
         )
 
         ctx.drawBox(box, color = Color(255, 132, 94))

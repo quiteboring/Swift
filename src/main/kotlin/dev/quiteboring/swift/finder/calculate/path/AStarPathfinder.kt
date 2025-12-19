@@ -16,7 +16,7 @@ class AStarPathfinder(
   private val startZ: Int,
   private val goal: IGoal,
   private val ctx: CalculationContext,
-  private val heuristicWeight: Double = 1.1  // weighted a*, change this if it messes up the paths. but it's faster at 1.1 i think.
+  private val heuristicWeight: Double = 1.0  // weighted a*, change this if it messes up the paths. but it's faster at 1.1 i think.
 ) {
 
   private val closedSet: Long2ObjectMap<PathNode> = Long2ObjectOpenHashMap()
@@ -43,8 +43,10 @@ class AStarPathfinder(
       for (move in moves) {
         res.reset()
         move.calculate(ctx, currentNode.x, currentNode.y, currentNode.z, res)
+
         val cost = res.cost
         if (cost >= ctx.cost.INF_COST) continue
+
         val neighbourNode = getNode(res.x, res.y, res.z, PathNode.coordKey(res.x, res.y, res.z))
         val neighbourCostSoFar = currentNode.gCost + cost
 
