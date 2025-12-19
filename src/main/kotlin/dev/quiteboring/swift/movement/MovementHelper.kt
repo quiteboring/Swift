@@ -1,86 +1,250 @@
+/*
+ * This file is part of Baritone.
+ *
+ * Baritone is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Baritone is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package dev.quiteboring.swift.movement
 
-import it.unimi.dsi.fastutil.objects.Object2ByteOpenHashMap
-import net.minecraft.block.BlockState
-import net.minecraft.block.Blocks
-import net.minecraft.block.CarpetBlock
+import dev.quiteboring.swift.util.BlockStateAccessor
+import dev.quiteboring.swift.util.Ternary
+import net.minecraft.block.*
+import net.minecraft.entity.ai.pathing.NavigationType
+import net.minecraft.fluid.Fluids
+import net.minecraft.fluid.WaterFluid
 
+/*
+ * Source code copied from the Baritone project.
+ * https://github.com/cabaletta/baritone
+ */
 object MovementHelper {
 
-  private const val UNKNOWN: Byte = -1
-  private const val SOLID: Byte = 1
-  private const val PASSABLE: Byte = 0
+  fun canWalkOn(bsa: BlockStateAccessor, x: Int, y: Int, z: Int, state: BlockState? = bsa.get(x, y, z)): Boolean {
+    val canWalkOn = canWalkOnBlockState(state)
 
-  private val solidityCache = Object2ByteOpenHashMap<BlockState>().apply {
-    defaultReturnValue(UNKNOWN)
+    if (canWalkOn == Ternary.YES) {
+      return true
+    }
+
+    if (canWalkOn == Ternary.NO) {
+      return false
+    }
+
+    return canWalkOnPosition(bsa, x, y, z, state)
   }
 
-  private val ALWAYS_PASSABLE = setOf(
-    Blocks.AIR, Blocks.CAVE_AIR, Blocks.VOID_AIR,
-    Blocks.TALL_GRASS, Blocks.SHORT_GRASS, Blocks.FERN, Blocks.LARGE_FERN,
-    Blocks.DEAD_BUSH, Blocks.DANDELION, Blocks.POPPY,
-    Blocks.TORCH, Blocks.WALL_TORCH, Blocks.REDSTONE_TORCH,
-    Blocks.SOUL_TORCH, Blocks.SOUL_WALL_TORCH,
-    Blocks.RAIL, Blocks.POWERED_RAIL, Blocks.DETECTOR_RAIL, Blocks.ACTIVATOR_RAIL,
-    Blocks.REDSTONE_WIRE, Blocks.LEVER, Blocks.TRIPWIRE, Blocks.TRIPWIRE_HOOK
-  )
+  fun canWalkThrough(bsa: BlockStateAccessor, x: Int, y: Int, z: Int, state: BlockState? = bsa.get(x, y, z)): Boolean {
+    val canWalkThrough = canWalkThroughBlockState(state)
 
-  private val ALWAYS_SOLID = setOf(
-    Blocks.STONE, Blocks.GRANITE, Blocks.DIORITE, Blocks.ANDESITE,
-    Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.PODZOL, Blocks.MYCELIUM,
-    Blocks.COBBLESTONE, Blocks.MOSSY_COBBLESTONE,
-    Blocks.OAK_PLANKS, Blocks.SPRUCE_PLANKS, Blocks.BIRCH_PLANKS,
-    Blocks.JUNGLE_PLANKS, Blocks.ACACIA_PLANKS, Blocks.DARK_OAK_PLANKS,
-    Blocks.NETHERRACK, Blocks.END_STONE, Blocks.OBSIDIAN, Blocks.BEDROCK,
-    Blocks.SAND, Blocks.RED_SAND, Blocks.GRAVEL, Blocks.CLAY,
-    Blocks.BRICKS, Blocks.STONE_BRICKS, Blocks.DEEPSLATE
-  )
+    if (canWalkThrough == Ternary.YES) {
+      return true
+    }
 
-  fun isSolid(ctx: CalculationContext, x: Int, y: Int, z: Int): Boolean {
-    val state = ctx.get(x, y, z) ?: return false
-    return isSolidState(ctx, state, x, y, z)
+    if (canWalkThrough == Ternary.NO) {
+      return false
+    }
+
+    return canWalkThroughPosition(bsa, x, y, z, state)
   }
 
-  fun isSolidState(ctx: CalculationContext, state: BlockState, x: Int, y: Int, z: Int): Boolean {
-    if (state.isAir) return false
+  fun canWalkThroughPosition(bsa: BlockStateAccessor, x: Int, y: Int, z: Int, state: BlockState?): Boolean {
+    val block = state?.block ?: return false
 
+    return when (block) {
+      is CarpetBlock ->
+        canWalkOn(bsa, x, y - 1, z)
+
+      is SnowBlock -> {
+        if (!bsa.isChunkLoaded(x, z)) return true
+        if (state.get(SnowBlock.LAYERS) >= 3) return false
+        canWalkOn(bsa, x, y - 1, z)
+      }
+
+      else -> {
+        val fluidState = state.fluidState
+        if (!fluidState.isEmpty) {
+          if (isFlowing(bsa, x, y, z, state)) return false
+
+          val up = bsa.get(x, y + 1, z) ?: return false
+          if (!up.fluidState.isEmpty || up.block is LilyPadBlock) return false
+
+          return fluidState.fluid is WaterFluid
+        }
+
+        state.canPathfindThrough(NavigationType.LAND)
+      }
+    }
+  }
+
+  fun canWalkThroughBlockState(state: BlockState?): Ternary {
+    val block = state?.block ?: return Ternary.NO
+
+    if (block is AirBlock) {
+      return Ternary.YES
+    }
+
+    val fluidState = state.fluidState
+    if (!fluidState.isEmpty) {
+      return if (fluidState.level != 8) Ternary.NO else Ternary.MAYBE
+    }
+
+    return when (block) {
+      in setOf(
+        Blocks.COBWEB,
+        Blocks.END_PORTAL,
+        Blocks.COCOA,
+        Blocks.BUBBLE_COLUMN,
+        Blocks.HONEY_BLOCK,
+        Blocks.END_ROD,
+        Blocks.SWEET_BERRY_BUSH,
+        Blocks.POINTED_DRIPSTONE,
+        Blocks.BIG_DRIPLEAF,
+        Blocks.POWDER_SNOW
+      ),
+        -> Ternary.NO
+
+      is FireBlock -> Ternary.NO
+      is AbstractSkullBlock -> Ternary.NO
+      is ShulkerBoxBlock -> Ternary.NO
+      is SlabBlock -> Ternary.NO
+      is TrapdoorBlock -> Ternary.NO
+      is AmethystClusterBlock -> Ternary.NO
+      is AzaleaBlock -> Ternary.NO
+      is CauldronBlock -> Ternary.NO
+      is DoorBlock, is FenceGateBlock -> {
+        // TODO this assumes that all doors in all mods are openable
+        if (block === Blocks.IRON_DOOR) Ternary.NO else Ternary.YES
+      }
+
+      is CarpetBlock -> Ternary.MAYBE
+      is SnowBlock -> Ternary.MAYBE
+      else -> try {
+        if (state.canPathfindThrough(NavigationType.LAND)) {
+          Ternary.YES
+        } else {
+          Ternary.NO
+        }
+      } catch (_: Throwable) {
+        Ternary.MAYBE
+      }
+    }
+  }
+
+  fun canWalkOnBlockState(state: BlockState?): Ternary {
+    val block = state?.block ?: return Ternary.NO
+
+    if (isWater(state) || isLava(state)) {
+      return Ternary.MAYBE
+    }
+
+    return when {
+      isBlockNormalCube(state) && block !in setOf(
+        Blocks.MAGMA_BLOCK,
+        Blocks.BUBBLE_COLUMN,
+        Blocks.HONEY_BLOCK
+      ) -> Ternary.YES
+
+      block is AzaleaBlock -> Ternary.YES
+
+      block in setOf(
+        Blocks.LADDER,
+        Blocks.VINE,
+        Blocks.FARMLAND,
+        Blocks.DIRT_PATH,
+        Blocks.SOUL_SAND,
+        Blocks.ENDER_CHEST,
+        Blocks.CHEST,
+        Blocks.TRAPPED_CHEST,
+        Blocks.GLASS
+      ) -> Ternary.YES
+
+      block is StainedGlassBlock -> Ternary.YES
+      block is StairsBlock -> Ternary.YES
+      block is SlabBlock -> Ternary.YES
+
+      else -> Ternary.NO
+    }
+  }
+
+  fun isBlockNormalCube(state: BlockState): Boolean {
     val block = state.block
 
-    if (block is CarpetBlock) return false
-
-    if (ALWAYS_PASSABLE.contains(block)) return false
-    if (ALWAYS_SOLID.contains(block)) return true
-
-    val cached = solidityCache.getByte(state)
-    if (cached != UNKNOWN) {
-      return cached == SOLID
+    if (
+      block is BambooShootBlock
+      || block is PistonExtensionBlock
+      || block is ScaffoldingBlock
+      || block is ShulkerBoxBlock
+      || block is PointedDripstoneBlock
+      || block is AmethystClusterBlock
+    ) {
+      return false
     }
 
-    ctx.bsa.mutablePos.set(x, y, z)
-    val solid = !state.getCollisionShape(ctx.world, ctx.bsa.mutablePos).isEmpty
-    solidityCache.put(state, if (solid) SOLID else PASSABLE)
-    return solid
-  }
-
-  fun isPassable(ctx: CalculationContext, x: Int, y: Int, z: Int): Boolean {
-    val state = ctx.get(x, y, z) ?: return false
-    return !isSolidState(ctx, state, x, y, z)
-  }
-
-  fun isSafe(ctx: CalculationContext, x: Int, y: Int, z: Int): Boolean {
-    if (!hasValidGround(ctx, x, y - 1, z)) return false
-    if (!isPassable(ctx, x, y, z)) return false
-    if (!isPassable(ctx, x, y + 1, z)) return false
-    return true
-  }
-
-  private fun hasValidGround(ctx: CalculationContext, x: Int, y: Int, z: Int): Boolean {
-    val state = ctx.get(x, y, z) ?: return false
-
-    if (state.block is CarpetBlock) {
-      return isSolid(ctx, x, y - 1, z)
+    try {
+      return Block.isShapeFullCube(state.getCollisionShape(null, null))
+    } catch (_: Exception) {
     }
 
-    return isSolidState(ctx, state, x, y, z)
+    return false
   }
+
+  fun canWalkOnPosition(bsa: BlockStateAccessor, x: Int, y: Int, z: Int, state: BlockState?): Boolean {
+    if (isWater(state)) {
+      val upState = bsa.get(x, y + 1, z) ?: return false
+      val up = upState.block
+
+      if (up === Blocks.LILY_PAD || up is CarpetBlock) {
+        return true
+      }
+
+      if (isFlowing(bsa, x, y, z, state) || upState.fluidState.fluid === Fluids.FLOWING_WATER) {
+        return isWater(upState)
+      }
+
+      return isWater(upState)
+    }
+
+    return false
+  }
+
+  fun isWater(state: BlockState?): Boolean {
+    val fluid = state?.fluidState?.fluid ?: return false
+    return fluid === Fluids.WATER || fluid === Fluids.FLOWING_WATER
+  }
+
+  fun isLava(state: BlockState?): Boolean {
+    val fluid = state?.fluidState?.fluid ?: return false
+    return fluid === Fluids.LAVA || fluid === Fluids.FLOWING_LAVA
+  }
+
+  fun possiblyFlowing(state: BlockState?): Boolean {
+    val fluidState = state?.fluidState ?: return false
+
+    return !fluidState.isStill
+      && fluidState.fluid.getLevel(fluidState) != 8
+  }
+
+  fun isFlowing(bsa: BlockStateAccessor, x: Int, y: Int, z: Int, state: BlockState? = bsa.get(x, y, z)): Boolean {
+    val fluidState = state?.fluidState ?: return false
+
+    if (!fluidState.isStill) return true
+    if (fluidState.fluid.getLevel(fluidState) != 8) return true
+
+    return possiblyFlowing(bsa.get(x + 1, y, z)) ||
+      possiblyFlowing(bsa.get(x - 1, y, z)) ||
+      possiblyFlowing(bsa.get(x, y, z + 1)) ||
+      possiblyFlowing(bsa.get(x, y, z - 1))
+  }
+
 }

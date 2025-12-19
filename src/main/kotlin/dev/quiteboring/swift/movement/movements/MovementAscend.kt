@@ -19,8 +19,10 @@ class MovementAscend(val from: BlockPos, to: BlockPos) : Movement(from, to) {
       destX: Int, destZ: Int,
       res: MovementResult
     ) {
-      if (!MovementHelper.isSafe(ctx, destX, y + 1, destZ)) return
-      if (!MovementHelper.isPassable(ctx, x, y + 2, z)) return
+      if (!MovementHelper.canWalkOn(ctx.bsa, destX, y + 1, destZ)) return
+      if (!MovementHelper.canWalkThrough(ctx.bsa, destX, y + 2, destZ)) return
+      if (!MovementHelper.canWalkThrough(ctx.bsa, destX, y + 3, destZ)) return
+      if (!MovementHelper.canWalkThrough(ctx.bsa, x, y + 3, z)) return
 
       res.set(destX, y + 1, destZ)
 
@@ -31,7 +33,7 @@ class MovementAscend(val from: BlockPos, to: BlockPos) : Movement(from, to) {
         ctx.cost.SLAB_ASCENT_TIME
       } else {
         ctx.cost.JUMP_UP_ONE_BLOCK_TIME
-      }
+      } + ctx.wallDistance.getPathPenalty(destX, y + 2, destZ)
     }
   }
 

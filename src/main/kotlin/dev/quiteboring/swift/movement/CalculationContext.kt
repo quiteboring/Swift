@@ -17,6 +17,8 @@ class CalculationContext {
   val cost = ActionCosts(jumpBoostAmplifier = jumpBoostAmplifier)
   val maxFallHeight = 20
 
+  val wallDistance = WallDistanceCalculator(this)
+
   fun get(x: Int, y: Int, z: Int): BlockState? {
     return bsa.get(x, y, z)
   }

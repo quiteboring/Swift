@@ -16,13 +16,15 @@ class MovementDiagonal(val from: BlockPos, to: BlockPos) : Movement(from, to) {
       destX: Int, destZ: Int,
       res: MovementResult
     ) {
-      if (!MovementHelper.isSafe(ctx, destX, y, destZ)) return
+      if (!MovementHelper.canWalkOn(ctx.bsa, destX, y, destZ)) return
+      if (!MovementHelper.canWalkThrough(ctx.bsa, destX, y + 1, destZ)) return
+      if (!MovementHelper.canWalkThrough(ctx.bsa, destX, y + 2, destZ)) return
 
-      if (MovementHelper.isSolid(ctx, x, y, destZ) || MovementHelper.isSolid(ctx, destX, y, z)) return
-      if (MovementHelper.isSolid(ctx, x, y + 1, destZ) || MovementHelper.isSolid(ctx, destX, y + 1, z)) return
+      if (!MovementHelper.canWalkThrough(ctx.bsa, x, y + 1, destZ) || !MovementHelper.canWalkThrough(ctx.bsa, destX, y + 1, z)) return
+      if (!MovementHelper.canWalkThrough(ctx.bsa, x, y + 2, destZ) || !MovementHelper.canWalkThrough(ctx.bsa, destX, y + 2, z)) return
 
       res.set(destX, y, destZ)
-      res.cost = ctx.cost.SPRINT_DIAGONAL_TIME
+      res.cost = ctx.cost.SPRINT_DIAGONAL_TIME + ctx.wallDistance.getPathPenalty(destX, y + 1, destZ)
     }
   }
 }

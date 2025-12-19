@@ -70,7 +70,7 @@ object PathCommand {
           pos.x + 1.0, pos.y + 1.0, pos.z + 1.0
         )
 
-        ctx.drawBox(box, color = Color(255, 132, 94))
+        ctx.drawBox(box, esp = true, color = Color(255, 132, 94))
       }
     }
   }

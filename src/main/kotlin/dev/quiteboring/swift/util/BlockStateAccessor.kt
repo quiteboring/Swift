@@ -38,6 +38,10 @@ class BlockStateAccessor(val world: World) {
     return chunk?.let { getFromChunk(it, x, y, z) }
   }
 
+  fun isChunkLoaded(blockX: Int, blockZ: Int): Boolean {
+    return world.chunkManager.isChunkLoaded(blockX shr 4, blockZ shr 4)
+  }
+
   fun getFromChunk(chunk: Chunk, x: Int, y: Int, z: Int): BlockState {
     val sectionIndex = (y - bottomY) shr 4
 
@@ -53,4 +57,5 @@ class BlockStateAccessor(val world: World) {
 
     return section.getBlockState(x and 15, y and 15, z and 15)
   }
+
 }

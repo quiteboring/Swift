@@ -19,16 +19,16 @@ class MovementDescend(val from: BlockPos, to: BlockPos) : Movement(from, to) {
       destX: Int, destZ: Int,
       res: MovementResult
     ) {
-      if (!MovementHelper.isPassable(ctx, destX, y, destZ)) return
-      if (!MovementHelper.isPassable(ctx, destX, y + 1, destZ)) return
+      if (!MovementHelper.canWalkThrough(ctx.bsa, destX, y + 1, destZ)) return
+      if (!MovementHelper.canWalkThrough(ctx.bsa, destX, y + 2, destZ)) return
 
       for (fallDist in 1..ctx.maxFallHeight) {
         val destY = y - fallDist
 
-        if (!MovementHelper.isPassable(ctx, destX, destY + 1, destZ)) return
-        if (!MovementHelper.isPassable(ctx, destX, destY, destZ)) return
+        if (!MovementHelper.canWalkThrough(ctx.bsa, destX, destY + 2, destZ)) return
+        if (!MovementHelper.canWalkThrough(ctx.bsa, destX, destY + 1, destZ)) return
 
-        if (MovementHelper.isSolid(ctx, destX, destY - 1, destZ)) {
+        if (MovementHelper.canWalkOn(ctx.bsa, destX, destY, destZ)) {
           res.set(destX, destY, destZ)
 
           var cost = ctx.cost.WALK_OFF_EDGE_TIME + ctx.cost.getFallTime(fallDist)
@@ -36,6 +36,8 @@ class MovementDescend(val from: BlockPos, to: BlockPos) : Movement(from, to) {
           if (fallDist > 3) {
             cost += (fallDist - 3) * (fallDist - 3) * 2.0
           }
+
+          cost += ctx.wallDistance.getPathPenalty(destX, destY, destZ)
 
           res.cost = cost
           return
