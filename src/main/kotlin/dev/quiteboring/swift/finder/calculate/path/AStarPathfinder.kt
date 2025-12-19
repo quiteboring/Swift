@@ -7,7 +7,6 @@ import dev.quiteboring.swift.finder.goal.IGoal
 import dev.quiteboring.swift.finder.movement.CalculationContext
 import dev.quiteboring.swift.finder.movement.MovementResult
 import dev.quiteboring.swift.finder.movement.Moves
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 
 class AStarPathfinder(
@@ -16,16 +15,16 @@ class AStarPathfinder(
   private val startZ: Int,
   private val goal: IGoal,
   private val ctx: CalculationContext,
-  private val heuristicWeight: Double = 1.0  // weighted a*, change this if it messes up the paths. but it's faster at 1.1 i think.
+  private val heuristicWeight: Double = 0.4  // weighted a*, change this if it messes up the paths. but it's faster at 1.1 i think.
 ) {
 
-  private val closedSet: Long2ObjectMap<PathNode> = Long2ObjectOpenHashMap()
+  private val nodeMap = Long2ObjectOpenHashMap<PathNode>()
   private val moves = Moves.entries.toTypedArray()
   private val res = MovementResult()
 
   fun findPath(): Path? {
     val openSet = BinaryHeapOpenSet()
-    val startNode = PathNode(startX, startY, startZ, goal)
+    val startNode = getOrCreateNode(startX, startY, startZ)
 
     startNode.gCost = 0.0
     startNode.fCost = startNode.hCost * heuristicWeight
@@ -34,31 +33,41 @@ class AStarPathfinder(
     val startTime = System.currentTimeMillis()
 
     while (!openSet.isEmpty()) {
-      val currentNode = openSet.poll()
+      val current = openSet.poll()
+      val cx = current.x
+      val cy = current.y
+      val cz = current.z
 
-      if (goal.isAtGoal(currentNode.x, currentNode.y, currentNode.z)) {
-        return Path(currentNode, System.currentTimeMillis() - startTime)
+      if (goal.isAtGoal(cx, cy, cz)) {
+        val elapsed = System.currentTimeMillis() - startTime
+        return Path(current, elapsed)
       }
+
+      val currentCost = current.gCost
 
       for (move in moves) {
         res.reset()
-        move.calculate(ctx, currentNode.x, currentNode.y, currentNode.z, res)
+        move.calculate(ctx, cx, cy, cz, res)
 
-        val cost = res.cost
-        if (cost >= ctx.cost.INF_COST) continue
+        val moveCost = res.cost
+        if (moveCost >= ctx.cost.INF_COST) continue
 
-        val neighbourNode = getNode(res.x, res.y, res.z, PathNode.coordKey(res.x, res.y, res.z))
-        val neighbourCostSoFar = currentNode.gCost + cost
+        val nx = res.x
+        val ny = res.y
+        val nz = res.z
 
-        if (neighbourNode.gCost > neighbourCostSoFar) {
-          neighbourNode.parent = currentNode
-          neighbourNode.gCost = neighbourCostSoFar
-          neighbourNode.fCost = neighbourCostSoFar + neighbourNode.hCost * heuristicWeight
+        val neighbour = getOrCreateNode(nx, ny, nz)
+        val newCost = currentCost + moveCost
 
-          if (neighbourNode.heapPosition == -1) {
-            openSet.add(neighbourNode)
+        if (newCost < neighbour.gCost) {
+          neighbour.parent = current
+          neighbour.gCost = newCost
+          neighbour.fCost = newCost + neighbour.hCost * heuristicWeight
+
+          if (neighbour.heapPosition == -1) {
+            openSet.add(neighbour)
           } else {
-            openSet.relocate(neighbourNode)
+            openSet.relocate(neighbour)
           }
         }
       }
@@ -67,15 +76,16 @@ class AStarPathfinder(
     return null
   }
 
-  private fun getNode(x: Int, y: Int, z: Int, hash: Long): PathNode {
-    var n: PathNode? = closedSet.get(hash)
+  private fun getOrCreateNode(x: Int, y: Int, z: Int): PathNode {
+    val key = PathNode.coordKey(x, y, z)
+    var node = nodeMap.get(key)
 
-    if (n == null) {
-      n = PathNode(x, y, z, goal)
-      closedSet.put(hash, n)
+    if (node == null) {
+      node = PathNode(x, y, z, goal)
+      nodeMap.put(key, node)
     }
 
-    return n
+    return node
   }
 
 }
