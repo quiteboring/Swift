@@ -95,6 +95,7 @@ object MovementHelper {
     }
 
     val fluidState = state.fluidState
+
     if (!fluidState.isEmpty) {
       return if (fluidState.level != 8) Ternary.NO else Ternary.MAYBE
     }
