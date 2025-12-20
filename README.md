@@ -8,8 +8,6 @@
   </p>
 </div>
 
----
-
 ## About The Project
 
 Swift Pathfinder is a high-performance A* pathfinder designed specifically for Minecraft. Its goal is to generate paths that feel **natural and player-like**, while remaining fast enough for real-time use.
