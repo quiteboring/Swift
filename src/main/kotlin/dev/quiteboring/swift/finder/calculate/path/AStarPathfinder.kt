@@ -9,13 +9,16 @@ import dev.quiteboring.swift.finder.movement.MovementResult
 import dev.quiteboring.swift.finder.movement.Moves
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 
+/**
+ * Thank you EpsilonPhoenix for this superb class!
+ */
 class AStarPathfinder(
   private val startX: Int,
   private val startY: Int,
   private val startZ: Int,
   private val goal: IGoal,
   private val ctx: CalculationContext,
-  private val heuristicWeight: Double = 1.1  // weighted a*, change this if it messes up the paths. but it's faster at 1.1 i think.
+  private val heuristicWeight: Double = 1.1  // weighted A*, change this if it messes up the paths. but it's faster at 1.1 i think.
 ) {
 
   private val nodeMap = Long2ObjectOpenHashMap<PathNode>()

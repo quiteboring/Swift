@@ -5,6 +5,7 @@ import net.minecraft.util.math.BlockPos
 class Path(endNode: PathNode, val timeTaken: Long) {
 
   val points: List<BlockPos>
+  val keyNodes: List<BlockPos>
 
   init {
     var curr: PathNode? = endNode
@@ -15,7 +16,8 @@ class Path(endNode: PathNode, val timeTaken: Long) {
       curr = curr.parent
     }
 
-    points = extractKeyPoints(list)
+    points = list
+    keyNodes = extractKeyPoints(points)
   }
 
   private fun extractKeyPoints(points: List<BlockPos>): List<BlockPos> {
