@@ -1,6 +1,6 @@
-package dev.quiteboring.swift.calc.openset
+package dev.quiteboring.swift.finder.calculate.openset
 
-import dev.quiteboring.swift.calc.PathNode
+import dev.quiteboring.swift.finder.calculate.PathNode
 
 class BinaryHeapOpenSet(initialSize: Int = 1024) {
 

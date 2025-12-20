@@ -1,4 +1,4 @@
-package dev.quiteboring.swift.goal
+package dev.quiteboring.swift.finder.goal
 
 interface IGoal {
 

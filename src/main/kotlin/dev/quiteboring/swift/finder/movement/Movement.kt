@@ -1,4 +1,4 @@
-package dev.quiteboring.swift.movement
+package dev.quiteboring.swift.finder.movement
 
 import net.minecraft.util.math.BlockPos
 

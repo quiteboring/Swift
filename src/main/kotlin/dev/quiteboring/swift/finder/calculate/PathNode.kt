@@ -1,6 +1,6 @@
-package dev.quiteboring.swift.calc
+package dev.quiteboring.swift.finder.calculate
 
-import dev.quiteboring.swift.goal.IGoal
+import dev.quiteboring.swift.finder.goal.IGoal
 
 class PathNode(
   val x: Int,
@@ -8,6 +8,7 @@ class PathNode(
   val z: Int,
   goal: IGoal,
 ) {
+
   var gCost: Double = 1e6
   val hCost: Double = goal.heuristic(x, y, z)
   var fCost: Double = 1e6

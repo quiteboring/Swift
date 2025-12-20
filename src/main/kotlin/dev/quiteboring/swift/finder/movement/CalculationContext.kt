@@ -1,6 +1,6 @@
-package dev.quiteboring.swift.movement
+package dev.quiteboring.swift.finder.movement
 
-import dev.quiteboring.swift.costs.ActionCosts
+import dev.quiteboring.swift.finder.costs.ActionCosts
 import dev.quiteboring.swift.util.BlockStateAccessor
 import net.minecraft.block.BlockState
 import net.minecraft.client.MinecraftClient
@@ -17,7 +17,7 @@ class CalculationContext {
   val cost = ActionCosts(jumpBoostAmplifier = jumpBoostAmplifier)
   val maxFallHeight = 20
 
-  val wallDistance = WallDistanceCalculator(this)
+  val wdc = WallDistanceCalculator(this)
 
   fun get(x: Int, y: Int, z: Int): BlockState? {
     return bsa.get(x, y, z)

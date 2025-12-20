@@ -1,11 +1,14 @@
-package dev.quiteboring.swift.movement
+package dev.quiteboring.swift.finder.movement
 
-import dev.quiteboring.swift.calc.PathNode
+import dev.quiteboring.swift.finder.calculate.PathNode
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import net.minecraft.block.*
 import kotlin.math.min
 
+/**
+ * Thank you EpsilonPhoenix for this superb class!
+ */
 class WallDistanceCalculator(private val ctx: CalculationContext) {
 
   companion object {
@@ -108,7 +111,6 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
   private fun isBlockingWall(x: Int, y: Int, z: Int): Boolean {
     val state = ctx.get(x, y, z) ?: return false
     if (state.isAir) return false
-
     val block = state.block
 
     if (
@@ -127,15 +129,13 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
       return false
     }
 
-
     if (block is FenceBlock || block is FenceGateBlock || block is WallBlock) {
       return true
     }
 
     if (!MovementHelper.isSolidState(ctx, state, x, y, z)) return false
 
-    ctx.bsa.mutablePos.set(x, y, z)
-    val shape = state.getCollisionShape(ctx.world, ctx.bsa.mutablePos)
+    val shape = state.getCollisionShape(null, null)
     if (shape.isEmpty) return false
 
     return shape.boundingBox.let { it.maxY - it.minY >= 0.5 }
@@ -166,4 +166,5 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
     }
     return dist
   }
+
 }

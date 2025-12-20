@@ -10,7 +10,7 @@ object PlayerUtils {
 
   fun getBlockStandingOn(): BlockPos? {
     return mc.player?.let {
-      BlockPos.ofFloored(it.x, ceil(it.y - 0.25) - 1, it.z)
+      BlockPos.ofFloored(it.x, ceil(it.y - 0.25), it.z)
     }
   }
 

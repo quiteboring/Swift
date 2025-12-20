@@ -1,9 +1,10 @@
-package dev.quiteboring.swift.goal
+package dev.quiteboring.swift.finder.goal
 
-import dev.quiteboring.swift.movement.CalculationContext
+import dev.quiteboring.swift.finder.movement.CalculationContext
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.sqrt
 
 class Goal(
   val goalX: Int,
@@ -14,7 +15,7 @@ class Goal(
 
   // precompute cuz it's slightly faster ig.
   private val sprintCost = ctx.cost.SPRINT_ONE_BLOCK_TIME
-  private val diagonalCost = sprintCost * 1.4142135623730951  // sqrt(2)
+  private val diagonalCost = sprintCost * sqrt(2.0)
   private val fallCostPerBlock = ctx.cost.getFallTime(2) * 0.5
   private val jumpCostPerBlock = ctx.cost.JUMP_UP_ONE_BLOCK_TIME * 0.5
 
@@ -39,4 +40,5 @@ class Goal(
 
     return horizontal + vertical
   }
+
 }

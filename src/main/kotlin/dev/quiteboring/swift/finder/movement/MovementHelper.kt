@@ -1,4 +1,4 @@
-package dev.quiteboring.swift.movement
+package dev.quiteboring.swift.finder.movement
 
 import it.unimi.dsi.fastutil.objects.Object2ByteOpenHashMap
 import net.minecraft.block.BlockState
@@ -83,4 +83,5 @@ object MovementHelper {
 
     return isSolidState(ctx, state, x, y, z)
   }
+
 }

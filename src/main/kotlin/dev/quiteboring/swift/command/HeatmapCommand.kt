@@ -2,10 +2,10 @@ package dev.quiteboring.swift.command
 
 import com.mojang.brigadier.arguments.IntegerArgumentType
 import dev.quiteboring.swift.event.Context
-import dev.quiteboring.swift.movement.CalculationContext
-import dev.quiteboring.swift.movement.MovementHelper
+import dev.quiteboring.swift.finder.movement.CalculationContext
+import dev.quiteboring.swift.finder.movement.MovementHelper
 import dev.quiteboring.swift.util.PlayerUtils
-import dev.quiteboring.swift.util.render.drawBoxes
+import dev.quiteboring.swift.util.render.drawBox
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.minecraft.client.MinecraftClient
@@ -57,6 +57,7 @@ object HeatmapCommand {
   private fun setMode(newMode: Mode) {
     mode = newMode
     println("Mode: $mode")
+
     if (cachedCenter != null) {
       generate()
     }
@@ -70,9 +71,9 @@ object HeatmapCommand {
     val z = pos.z
 
     println("Inspecting: ($x, $y, $z)")
-    println("Edge: ${ctx.wallDistance.getEdgeDistance(x, y, z)}")
-    println("Wall: ${ctx.wallDistance.getWallDistance(x, y, z)}")
-    println("Penalty: ${ctx.wallDistance.getPathPenalty(x, y, z)}")
+    println("Edge: ${ctx.wdc.getEdgeDistance(x, y, z)}")
+    println("Wall: ${ctx.wdc.getWallDistance(x, y, z)}")
+    println("Penalty: ${ctx.wdc.getPathPenalty(x, y, z)}")
   }
 
   private fun generate() {
@@ -106,9 +107,9 @@ object HeatmapCommand {
             }
 
             val color = when (mode) {
-              Mode.PENALTY -> penaltyColor(ctx.wallDistance.getPathPenalty(x, y, z))
-              Mode.EDGE -> distanceColor(ctx.wallDistance.getEdgeDistance(x, y, z))
-              Mode.WALL -> distanceColor(ctx.wallDistance.getWallDistance(x, y, z))
+              Mode.PENALTY -> penaltyColor(ctx.wdc.getPathPenalty(x, y, z))
+              Mode.EDGE -> distanceColor(ctx.wdc.getEdgeDistance(x, y, z))
+              Mode.WALL -> distanceColor(ctx.wdc.getWallDistance(x, y, z))
             }
 
             result.add(box to color)
@@ -143,6 +144,11 @@ object HeatmapCommand {
   }
 
   fun onRender(ctx: Context) {
-    boxes?.let { ctx.drawBoxes(it, esp = false) }
+    boxes?.let {
+      it.forEach { (box, color) ->
+        ctx.drawBox(box, color)
+      }
+    }
   }
+
 }

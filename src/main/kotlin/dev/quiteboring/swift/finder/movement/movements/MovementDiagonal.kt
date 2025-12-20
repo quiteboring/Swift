@@ -1,9 +1,13 @@
-package dev.quiteboring.swift.movement.movements
+package dev.quiteboring.swift.finder.movement.movements
 
-import dev.quiteboring.swift.movement.*
+import dev.quiteboring.swift.finder.movement.CalculationContext
+import dev.quiteboring.swift.finder.movement.Movement
+import dev.quiteboring.swift.finder.movement.MovementHelper
+import dev.quiteboring.swift.finder.movement.MovementResult
 import net.minecraft.util.math.BlockPos
 
-class MovementDiagonal(val from: BlockPos, to: BlockPos) : Movement(from, to) {
+class MovementDiagonal(from: BlockPos, to: BlockPos) : Movement(from, to) {
+
   override fun calculateCost(ctx: CalculationContext, res: MovementResult) {
     calculateCost(ctx, source.x, source.y, source.z, target.x, target.z, res)
     costs = res.cost
@@ -22,11 +26,8 @@ class MovementDiagonal(val from: BlockPos, to: BlockPos) : Movement(from, to) {
       if (MovementHelper.isSolid(ctx, x, y + 1, destZ) || MovementHelper.isSolid(ctx, destX, y + 1, z)) return
 
       res.set(destX, y, destZ)
-
-      var cost = ctx.cost.SPRINT_DIAGONAL_TIME
-      cost += ctx.wallDistance.getPathPenalty(destX, y, destZ)
-
-      res.cost = cost
+      res.cost = ctx.cost.SPRINT_DIAGONAL_TIME + ctx.wdc.getPathPenalty(destX, y, destZ)
     }
   }
+
 }
