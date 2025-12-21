@@ -27,3 +27,7 @@ Contributions are welcome and appreciated.
 ## License
 
 See `LICENSE` for more information.
+
+This project is source-available under a non-commercial license.
+Commercial use requires explicit permission.
+If you want a commercial license, contact `epsilonphoenix` on Discord.
