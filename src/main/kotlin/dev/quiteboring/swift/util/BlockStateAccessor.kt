@@ -11,31 +11,44 @@ class BlockStateAccessor(val world: World) {
 
   val mutablePos: BlockPos.Mutable = BlockPos.Mutable()
 
-  private var prevChunk: Chunk? = null
+  private companion object {
+    const val CACHE_SIZE = 4
+    const val CACHE_MASK = CACHE_SIZE - 1
+  }
+
+  private val chunks = arrayOfNulls<Chunk>(CACHE_SIZE)
+  private val chunkKeys = LongArray(CACHE_SIZE) { Long.MIN_VALUE }
+  private var nextSlot = 0
 
   private val bottomY = world.bottomY
   private val air: BlockState = Blocks.AIR.defaultState
 
+  private fun chunkKey(chunkX: Int, chunkZ: Int): Long =
+    (chunkX.toLong() shl 32) or (chunkZ.toLong() and 0xFFFFFFFFL)
+
   fun get(x: Int, y: Int, z: Int): BlockState? {
-    val cached = prevChunk
+    val chunkX = x shr 4
+    val chunkZ = z shr 4
+    val key = chunkKey(chunkX, chunkZ)
 
-    if (cached != null && cached.getPos().x == x shr 4 && cached.getPos().z == z shr 4) {
-      return getFromChunk(cached, x, y, z)
+    for (i in 0 until CACHE_SIZE) {
+      if (chunkKeys[i] == key) {
+        chunks[i]?.let { return getFromChunk(it, x, y, z) }
+      }
     }
 
-    val chunk = world.chunkManager.getChunk(x shr 4, z shr 4, ChunkStatus.FULL, false)
+    val chunk = world.chunkManager.getChunk(chunkX, chunkZ, ChunkStatus.FULL, false)
+    if (chunk == null || chunk.sectionArray.all { it.isEmpty }) return null
 
-    if (chunk != null && !chunk.sectionArray.all { it.isEmpty }) {
-      prevChunk = chunk
-      return getFromChunk(chunk, x, y, z)
-    }
+    chunks[nextSlot] = chunk
+    chunkKeys[nextSlot] = key
+    nextSlot = (nextSlot + 1) and CACHE_MASK
 
-    return null
+    return getFromChunk(chunk, x, y, z)
   }
 
-  fun isChunkLoaded(blockX: Int, blockZ: Int): Boolean {
-    return world.chunkManager.isChunkLoaded(blockX shr 4, blockZ shr 4)
-  }
+  fun isChunkLoaded(blockX: Int, blockZ: Int): Boolean =
+    world.chunkManager.isChunkLoaded(blockX shr 4, blockZ shr 4)
 
   fun getFromChunk(chunk: Chunk, x: Int, y: Int, z: Int): BlockState {
     val sectionIndex = (y - bottomY) shr 4
@@ -45,12 +58,8 @@ class BlockStateAccessor(val world: World) {
     }
 
     val section = chunk.sectionArray[sectionIndex]
-
-    if (section.isEmpty) {
-      return air
-    }
+    if (section.isEmpty) return air
 
     return section.getBlockState(x and 15, y and 15, z and 15)
   }
-
 }

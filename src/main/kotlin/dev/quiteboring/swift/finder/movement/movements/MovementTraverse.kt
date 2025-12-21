@@ -19,7 +19,7 @@ class MovementTraverse(from: BlockPos, to: BlockPos) : Movement(from, to) {
       x: Int, y: Int, z: Int,
       destX: Int, destZ: Int,
       res: MovementResult
-    ) {y
+    ) {
       if (!MovementHelper.isSafe(ctx, destX, y, destZ)) return
 
       res.set(destX, y, destZ)
