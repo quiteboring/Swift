@@ -1,7 +1,9 @@
 package dev.quiteboring.swift
 
+import dev.quiteboring.swift.cache.CachedWorld
 import dev.quiteboring.swift.command.HeatmapCommand
 import dev.quiteboring.swift.command.PathCommand
+import dev.quiteboring.swift.event.PacketEvent
 import dev.quiteboring.swift.event.WorldRenderEvent
 import net.fabricmc.api.ClientModInitializer
 
@@ -15,5 +17,10 @@ class Swift : ClientModInitializer {
       PathCommand.onRender(context)
       HeatmapCommand.onRender(context)
     }
+
+    PacketEvent.RECEIVE.register { packet ->
+      CachedWorld.onPacketReceived(packet)
+    }
   }
+
 }

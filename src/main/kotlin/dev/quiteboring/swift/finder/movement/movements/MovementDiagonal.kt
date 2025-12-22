@@ -4,6 +4,7 @@ import dev.quiteboring.swift.finder.movement.CalculationContext
 import dev.quiteboring.swift.finder.movement.Movement
 import dev.quiteboring.swift.finder.movement.MovementHelper
 import dev.quiteboring.swift.finder.movement.MovementResult
+import dev.quiteboring.swift.util.BlockUtils
 import net.minecraft.util.math.BlockPos
 
 class MovementDiagonal(from: BlockPos, to: BlockPos) : Movement(from, to) {
@@ -22,8 +23,8 @@ class MovementDiagonal(from: BlockPos, to: BlockPos) : Movement(from, to) {
     ) {
       if (!MovementHelper.isSafe(ctx, destX, y, destZ)) return
 
-      if (MovementHelper.isSolid(ctx, x, y, destZ) || MovementHelper.isSolid(ctx, destX, y, z)) return
-      if (MovementHelper.isSolid(ctx, x, y + 1, destZ) || MovementHelper.isSolid(ctx, destX, y + 1, z)) return
+      if (BlockUtils.isSolid(ctx, x, y, destZ) || BlockUtils.isSolid(ctx, destX, y, z)) return
+      if (BlockUtils.isSolid(ctx, x, y + 1, destZ) || BlockUtils.isSolid(ctx, destX, y + 1, z)) return
 
       res.set(destX, y, destZ)
       res.cost = ctx.cost.SPRINT_DIAGONAL_TIME + ctx.wdc.getPathPenalty(destX, y, destZ)

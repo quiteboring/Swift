@@ -9,6 +9,10 @@
   "client": [
     "FrustumInvoker",
     "WorldRendererMixin"
+  ],
+  "mixins": [
+    "ClientConnectionMixin",
+    "YggdrasilServicesKeyInfoMixin"
   ]
 }
 

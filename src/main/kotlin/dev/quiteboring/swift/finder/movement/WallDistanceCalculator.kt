@@ -1,10 +1,11 @@
 package dev.quiteboring.swift.finder.movement
 
 import dev.quiteboring.swift.finder.calculate.PathNode
+import dev.quiteboring.swift.util.BlockUtils
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
-import net.minecraft.block.*
 import kotlin.math.min
+import net.minecraft.block.*
 
 /**
  * Thank you EpsilonPhoenix for this superb class!
@@ -38,6 +39,7 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
   private val penaltyCache = Long2DoubleOpenHashMap().apply {
     defaultReturnValue(Double.NaN)
   }
+
   private val edgeCache = Long2IntOpenHashMap().apply { defaultReturnValue(-1) }
   private val wallCache = Long2IntOpenHashMap().apply { defaultReturnValue(-1) }
 
@@ -90,7 +92,7 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
       for (depth in 2..4) {
         val state = ctx.get(x, y - depth, z) ?: continue
         if (state.isAir || state.block is CarpetBlock) continue
-        if (MovementHelper.isSolidState(ctx, state, x, y - depth, z)) {
+        if (BlockUtils.isSolid(ctx, x, y - depth, z, state)) {
           return depth >= 3
         }
       }
@@ -98,10 +100,10 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
     }
 
     if (below.block is CarpetBlock) {
-      return !MovementHelper.isSolid(ctx, x, y - 2, z)
+      return !BlockUtils.isSolid(ctx, x, y - 2, z)
     }
 
-    return !MovementHelper.isSolidState(ctx, below, x, y - 1, z)
+    return !BlockUtils.isSolid(ctx, x, y - 1, z, below)
   }
 
   private fun isWall(x: Int, y: Int, z: Int): Boolean {
@@ -133,7 +135,7 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
       return true
     }
 
-    if (!MovementHelper.isSolidState(ctx, state, x, y, z)) return false
+    if (!BlockUtils.isSolid(ctx, x, y, z, state)) return false
 
     val shape = state.getCollisionShape(null, null)
     if (shape.isEmpty) return false

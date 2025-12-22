@@ -4,6 +4,7 @@ import dev.quiteboring.swift.finder.movement.CalculationContext
 import dev.quiteboring.swift.finder.movement.Movement
 import dev.quiteboring.swift.finder.movement.MovementHelper
 import dev.quiteboring.swift.finder.movement.MovementResult
+import dev.quiteboring.swift.util.BlockUtils
 import net.minecraft.util.math.BlockPos
 
 class MovementDescend(from: BlockPos, to: BlockPos) : Movement(from, to) {
@@ -20,16 +21,16 @@ class MovementDescend(from: BlockPos, to: BlockPos) : Movement(from, to) {
       destX: Int, destZ: Int,
       res: MovementResult
     ) {
-      if (!MovementHelper.isPassable(ctx, destX, y, destZ)) return
-      if (!MovementHelper.isPassable(ctx, destX, y + 1, destZ)) return
+      if (!BlockUtils.isPassable(ctx, destX, y, destZ)) return
+      if (!BlockUtils.isPassable(ctx, destX, y + 1, destZ)) return
 
       for (fallDist in 1..ctx.maxFallHeight) {
         val destY = y - fallDist
 
-        if (!MovementHelper.isPassable(ctx, destX, destY + 1, destZ)) return
-        if (!MovementHelper.isPassable(ctx, destX, destY, destZ)) return
+        if (!BlockUtils.isPassable(ctx, destX, destY + 1, destZ)) return
+        if (!BlockUtils.isPassable(ctx, destX, destY, destZ)) return
 
-        if (MovementHelper.isSolid(ctx, destX, destY - 1, destZ)) {
+        if (BlockUtils.isSolid(ctx, destX, destY - 1, destZ)) {
           res.set(destX, destY, destZ)
 
           var cost = ctx.cost.WALK_OFF_EDGE_TIME + ctx.cost.getFallTime(fallDist)

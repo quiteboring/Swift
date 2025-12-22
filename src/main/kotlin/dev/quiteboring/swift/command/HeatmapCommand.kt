@@ -6,13 +6,13 @@ import dev.quiteboring.swift.finder.movement.CalculationContext
 import dev.quiteboring.swift.finder.movement.MovementHelper
 import dev.quiteboring.swift.util.PlayerUtils
 import dev.quiteboring.swift.util.render.drawBox
+import java.awt.Color
+import kotlin.math.abs
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.minecraft.client.MinecraftClient
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
-import java.awt.Color
-import kotlin.math.abs
 
 object HeatmapCommand {
 
