@@ -4,8 +4,7 @@ import dev.quiteboring.swift.finder.movement.CalculationContext
 import dev.quiteboring.swift.finder.movement.Movement
 import dev.quiteboring.swift.finder.movement.MovementHelper
 import dev.quiteboring.swift.finder.movement.MovementResult
-import net.minecraft.block.SlabBlock
-import net.minecraft.block.StairsBlock
+import net.minecraft.block.*
 import net.minecraft.util.math.BlockPos
 
 class MovementAscend(from: BlockPos, to: BlockPos) : Movement(from, to) {
@@ -29,6 +28,8 @@ class MovementAscend(from: BlockPos, to: BlockPos) : Movement(from, to) {
 
       val groundState = ctx.get(destX, y, destZ)
       val block = groundState?.block
+
+      if (block is FenceBlock || block is FenceGateBlock || block is WallBlock) return
 
       res.cost = if (block is SlabBlock || block is StairsBlock) {
         ctx.cost.SLAB_ASCENT_TIME
