@@ -4,7 +4,7 @@
   <br />
   <h3 align="center">Swift</h3>
   <p align="center">
-    by Nathan & EpsilonPhoenix
+    Fast Path Generation
   </p>
 </div>
 
