@@ -11,17 +11,21 @@ object MovementHelper {
   val SHAPE_CONTEXT: ShapeContext = ShapeContext.absent()
 
   @JvmStatic
-  fun isSafe(bsa: BlockStateAccessor, x: Int, y: Int, z: Int): Boolean {
-    if (!isSolid(bsa, x, y - 1, z)) return false
-    if (!isPassable(bsa, x, y, z)) return false
-    if (!isPassable(bsa, x, y + 1, z)) return false
+  fun isSafe(ctx: CalculationContext, x: Int, y: Int, z: Int): Boolean {
+    if (!isSolid(ctx, x, y - 1, z)) return false
+    if (!isPassable(ctx, x, y, z)) return false
+    if (!isPassable(ctx, x, y + 1, z)) return false
     return true
   }
 
   @JvmStatic
-  fun isSolid(bsa: BlockStateAccessor, x: Int, y: Int, z: Int): Boolean {
-    val state = bsa.get(x, y, z)
-    return isSolidState(bsa, x, y, z, state)
+  fun isSolid(ctx: CalculationContext, x: Int, y: Int, z: Int, state: BlockState = ctx.get(x, y, z)): Boolean {
+    return ctx.precomputedData.isSolid(x, y, z, state)
+  }
+
+  @JvmStatic
+  fun isPassable(ctx: CalculationContext, x: Int, y: Int, z: Int, state: BlockState = ctx.get(x, y, z)): Boolean {
+    return ctx.precomputedData.isPassable(x, y, z, state)
   }
 
   @JvmStatic
@@ -37,12 +41,6 @@ object MovementHelper {
   }
 
   @JvmStatic
-  fun isPassable(bsa: BlockStateAccessor, x: Int, y: Int, z: Int): Boolean {
-    val state = bsa.get(x, y, z)
-    return isPassableState(bsa, x, y, z, state)
-  }
-
-  @JvmStatic
   fun isPassableState(bsa: BlockStateAccessor, x: Int, y: Int, z: Int, state: BlockState): Boolean {
     if (state.isAir) return true
     if (state.block is CarpetBlock) return true
@@ -50,4 +48,5 @@ object MovementHelper {
     bsa.mutablePos.set(x, y, z)
     return state.getCollisionShape(bsa.access, bsa.mutablePos, SHAPE_CONTEXT).isEmpty
   }
+
 }

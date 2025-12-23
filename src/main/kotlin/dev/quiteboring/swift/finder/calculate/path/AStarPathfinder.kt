@@ -107,4 +107,5 @@ class AStarPathfinder(
 
     return node
   }
+
 }

@@ -14,10 +14,8 @@ object MovementAscend {
     destX: Int, destZ: Int,
     res: MovementResult
   ) {
-    val bsa = ctx.bsa
-
-    if (!MovementHelper.isSafe(bsa, destX, y + 1, destZ)) return
-    if (!MovementHelper.isPassable(bsa, x, y + 2, z)) return
+    if (!MovementHelper.isSafe(ctx, destX, y + 1, destZ)) return
+    if (!MovementHelper.isPassable(ctx, x, y + 2, z)) return
 
     val groundState = ctx.get(destX, y, destZ)
     val block = groundState.block

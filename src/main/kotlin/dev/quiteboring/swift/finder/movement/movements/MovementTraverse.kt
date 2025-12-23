@@ -13,7 +13,7 @@ object MovementTraverse {
     destX: Int, destZ: Int,
     res: MovementResult
   ) {
-    if (!MovementHelper.isSafe(ctx.bsa, destX, y, destZ)) return
+    if (!MovementHelper.isSafe(ctx, destX, y, destZ)) return
 
     res.x = destX
     res.y = y

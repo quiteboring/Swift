@@ -2,6 +2,8 @@ package dev.quiteboring.swift.finder.movement
 
 import dev.quiteboring.swift.finder.costs.ActionCosts
 import dev.quiteboring.swift.finder.helper.BlockStateAccessor
+import dev.quiteboring.swift.finder.precompute.PrecomputedData
+import dev.quiteboring.swift.finder.precompute.WallDistanceCalculator
 import net.minecraft.block.BlockState
 import net.minecraft.client.MinecraftClient
 import net.minecraft.entity.effect.StatusEffects
@@ -18,6 +20,7 @@ class CalculationContext {
   @JvmField val maxFallHeight = 20
 
   @JvmField val wdc = WallDistanceCalculator(this)
+  @JvmField val precomputedData = PrecomputedData(bsa)
 
   fun get(x: Int, y: Int, z: Int): BlockState {
     return bsa.get(x, y, z)

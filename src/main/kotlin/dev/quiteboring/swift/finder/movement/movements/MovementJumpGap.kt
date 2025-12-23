@@ -14,10 +14,8 @@ object MovementJumpGap {
     destX: Int, destZ: Int,
     res: MovementResult
   ) {
-    val bsa = ctx.bsa
-
-    if (!MovementHelper.isSafe(bsa, destX, y, destZ)) return
-    if (!MovementHelper.isPassable(bsa, x, y + 2, z)) return
+    if (!MovementHelper.isSafe(ctx, destX, y, destZ)) return
+    if (!MovementHelper.isPassable(ctx, x, y + 2, z)) return
 
     val dx = destX - x
     val dz = destZ - z
@@ -32,9 +30,9 @@ object MovementJumpGap {
       val checkX = x + (dirX * i)
       val checkZ = z + (dirZ * i)
 
-      if (!MovementHelper.isPassable(bsa, checkX, y, checkZ)) return
-      if (!MovementHelper.isPassable(bsa, checkX, y + 1, checkZ)) return
-      if (!MovementHelper.isPassable(bsa, checkX, y + 2, checkZ)) return
+      if (!MovementHelper.isPassable(ctx, checkX, y, checkZ)) return
+      if (!MovementHelper.isPassable(ctx, checkX, y + 1, checkZ)) return
+      if (!MovementHelper.isPassable(ctx, checkX, y + 2, checkZ)) return
     }
 
     res.x = destX

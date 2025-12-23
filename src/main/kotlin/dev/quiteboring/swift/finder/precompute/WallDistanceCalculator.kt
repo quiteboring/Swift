@@ -1,9 +1,34 @@
-package dev.quiteboring.swift.finder.movement
+package dev.quiteboring.swift.finder.precompute
 
 import dev.quiteboring.swift.finder.calculate.PathNode
+import dev.quiteboring.swift.finder.movement.CalculationContext
+import dev.quiteboring.swift.finder.movement.MovementHelper
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
-import net.minecraft.block.*
+import net.minecraft.block.AbstractRailBlock
+import net.minecraft.block.BannerBlock
+import net.minecraft.block.ButtonBlock
+import net.minecraft.block.CarpetBlock
+import net.minecraft.block.DoorBlock
+import net.minecraft.block.FenceBlock
+import net.minecraft.block.FenceGateBlock
+import net.minecraft.block.LadderBlock
+import net.minecraft.block.LeverBlock
+import net.minecraft.block.PlantBlock
+import net.minecraft.block.PressurePlateBlock
+import net.minecraft.block.RedstoneWireBlock
+import net.minecraft.block.SignBlock
+import net.minecraft.block.SlabBlock
+import net.minecraft.block.SnowBlock
+import net.minecraft.block.StairsBlock
+import net.minecraft.block.TorchBlock
+import net.minecraft.block.TrapdoorBlock
+import net.minecraft.block.TripwireBlock
+import net.minecraft.block.TripwireHookBlock
+import net.minecraft.block.VineBlock
+import net.minecraft.block.WallBannerBlock
+import net.minecraft.block.WallBlock
+import net.minecraft.block.WallSignBlock
 import kotlin.math.min
 
 /**
@@ -58,7 +83,7 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
   }
 
   fun getPathPenalty(x: Int, y: Int, z: Int): Double {
-    val key = PathNode.coordKey(x, y, z)
+    val key = PathNode.Companion.coordKey(x, y, z)
     var penalty = penaltyCache.get(key)
 
     if (penalty.isNaN()) {
@@ -124,7 +149,7 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
       for (depth in 2..4) {
         val state = ctx.get(x, y - depth, z)
         if (!state.isAir && state.block !is CarpetBlock) {
-          if (MovementHelper.isSolidState(ctx.bsa, x, y - depth, z, state)) {
+          if (MovementHelper.isSolid(ctx, x, y - depth, z, state)) {
             return depth >= 3
           }
         }
@@ -134,10 +159,10 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
 
     val block = below.block
     if (block is CarpetBlock) {
-      return !MovementHelper.isSolid(ctx.bsa, x, y - 2, z)
+      return !MovementHelper.isSolid(ctx, x, y - 2, z)
     }
 
-    return !MovementHelper.isSolidState(ctx.bsa, x, y - 1, z, below)
+    return !MovementHelper.isSolid(ctx, x, y - 1, z, below)
   }
 
   private fun isWall(x: Int, y: Int, z: Int): Boolean {
@@ -169,7 +194,7 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
       return true
     }
 
-    if (!MovementHelper.isSolidState(ctx.bsa, x, y, z, state)) return false
+    if (!MovementHelper.isSolid(ctx, x, y, z, state)) return false
 
     val shape = state.getCollisionShape(ctx.bsa.access, ctx.bsa.mutablePos.set(x, y, z))
     if (shape.isEmpty) return false
@@ -179,13 +204,13 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
   }
 
   fun getEdgeDistance(x: Int, y: Int, z: Int): Int {
-    val key = PathNode.coordKey(x, y, z)
+    val key = PathNode.Companion.coordKey(x, y, z)
     var dist = edgeCache.get(key)
 
     if (dist == -1) {
       dist = min(
-        min(scanForEdge(x, y, z, 0, -1), scanForEdge(x, y, z, 0, 1)),
-        min(scanForEdge(x, y, z, 1, 0), scanForEdge(x, y, z, -1, 0))
+          min(scanForEdge(x, y, z, 0, -1), scanForEdge(x, y, z, 0, 1)),
+          min(scanForEdge(x, y, z, 1, 0), scanForEdge(x, y, z, -1, 0))
       )
       edgeCache.put(key, dist)
     }
@@ -194,13 +219,13 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
   }
 
   fun getWallDistance(x: Int, y: Int, z: Int): Int {
-    val key = PathNode.coordKey(x, y, z)
+    val key = PathNode.Companion.coordKey(x, y, z)
     var dist = wallCache.get(key)
 
     if (dist == -1) {
       dist = min(
-        min(scanForWall(x, y, z, 0, -1), scanForWall(x, y, z, 0, 1)),
-        min(scanForWall(x, y, z, 1, 0), scanForWall(x, y, z, -1, 0))
+          min(scanForWall(x, y, z, 0, -1), scanForWall(x, y, z, 0, 1)),
+          min(scanForWall(x, y, z, 1, 0), scanForWall(x, y, z, -1, 0))
       )
       wallCache.put(key, dist)
     }

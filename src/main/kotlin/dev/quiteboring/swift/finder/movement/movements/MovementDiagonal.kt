@@ -13,12 +13,10 @@ object MovementDiagonal {
     destX: Int, destZ: Int,
     res: MovementResult
   ) {
-    if (!MovementHelper.isSafe(ctx.bsa, destX, y, destZ)) return
+    if (!MovementHelper.isSafe(ctx, destX, y, destZ)) return
 
-    val bsa = ctx.bsa
-
-    if (MovementHelper.isSolid(bsa, x, y, destZ) || MovementHelper.isSolid(bsa, destX, y, z)) return
-    if (MovementHelper.isSolid(bsa, x, y + 1, destZ) || MovementHelper.isSolid(bsa, destX, y + 1, z)) return
+    if (MovementHelper.isSolid(ctx, x, y, destZ) || MovementHelper.isSolid(ctx, destX, y, z)) return
+    if (MovementHelper.isSolid(ctx, x, y + 1, destZ) || MovementHelper.isSolid(ctx, destX, y + 1, z)) return
 
     res.x = destX
     res.y = y

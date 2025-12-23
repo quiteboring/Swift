@@ -55,7 +55,7 @@ object PathCommand {
                         try {
                           val ctx = CalculationContext()
                           val result = AStarPathfinder(
-                            standingOn.z, standingOn.y, standingOn.z,
+                            standingOn.x, standingOn.y, standingOn.z,
                             Goal(x, y, z, ctx), ctx
                           ).findPath()
 

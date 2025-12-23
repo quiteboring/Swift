@@ -2,6 +2,6 @@ package dev.quiteboring.swift.util.setting
 
 class Settings {
 
-  var useRealWorld = false
+  var useRealWorld = true
 
 }

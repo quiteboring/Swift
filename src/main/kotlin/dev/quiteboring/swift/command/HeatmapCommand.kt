@@ -96,7 +96,7 @@ object HeatmapCommand {
         for (dy in searchOrder) {
           val y = center.y + dy + 1
 
-          if (MovementHelper.isSafe(ctx.bsa, x, y, z)) {
+          if (MovementHelper.isSafe(ctx, x, y, z)) {
             val blockPos = BlockPos(x, y - 1, z)
             val shape = world.getBlockState(blockPos).getOutlineShape(world, blockPos)
 

@@ -13,10 +13,8 @@ object MovementDescend {
     destX: Int, destZ: Int,
     res: MovementResult
   ) {
-    val bsa = ctx.bsa
-
-    if (!MovementHelper.isPassable(bsa, destX, y, destZ)) return
-    if (!MovementHelper.isPassable(bsa, destX, y + 1, destZ)) return
+    if (!MovementHelper.isPassable(ctx, destX, y, destZ)) return
+    if (!MovementHelper.isPassable(ctx, destX, y + 1, destZ)) return
 
     val maxFall = ctx.maxFallHeight
     val cost = ctx.cost
@@ -24,10 +22,10 @@ object MovementDescend {
     for (fallDist in 1..maxFall) {
       val destY = y - fallDist
 
-      if (!MovementHelper.isPassable(bsa, destX, destY + 1, destZ)) return
-      if (!MovementHelper.isPassable(bsa, destX, destY, destZ)) return
+      if (!MovementHelper.isPassable(ctx, destX, destY + 1, destZ)) return
+      if (!MovementHelper.isPassable(ctx, destX, destY, destZ)) return
 
-      if (MovementHelper.isSolid(bsa, destX, destY - 1, destZ)) {
+      if (MovementHelper.isSolid(ctx, destX, destY - 1, destZ)) {
         res.x = destX
         res.y = destY
         res.z = destZ
