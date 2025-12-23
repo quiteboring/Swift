@@ -23,11 +23,13 @@ object Swift : ClientModInitializer {
     }
 
     PacketEvent.RECEIVE.register { packet ->
-      CachedWorld.onPacketReceive(packet)
+      if (settings.useWorldCache) {
+        CachedWorld.onPacketReceive(packet)
+      }
     }
 
     ClientTickEvents.END_CLIENT_TICK.register { client ->
-      if (client.world != null) {
+      if (client.world != null && settings.useWorldCache) {
         CachedWorld.processPendingChunks()
       }
     }

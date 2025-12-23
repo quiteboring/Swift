@@ -24,7 +24,7 @@ object PathCommand {
   fun dispatch() {
     ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
       dispatcher.register(
-        ClientCommandManager.literal("pathfind")
+        ClientCommandManager.literal("swiftpf")
           .then(ClientCommandManager.literal("clear").executes {
             path = null
             MinecraftClient.getInstance().inGameHud.chatHud.addMessage(Text.of("Rendering Cleared"))

@@ -26,26 +26,26 @@ class BlockStateAccessor(val world: World) {
   fun get(x: Int, y: Int, z: Int): BlockState {
     if (y !in bottomY..topY) return air
 
-    if (Swift.getSettings().useRealWorld) {
-      val chunkX = x shr 4
-      val chunkZ = z shr 4
-
-      val chunk = prevChunk
-      if (chunk != null && prevChunkX == chunkX && prevChunkZ == chunkZ) {
-        return getFromChunk(chunk, x, y, z)
-      }
-
-      val loadedChunk = world.chunkManager.getChunk(chunkX, chunkZ, ChunkStatus.FULL, false)
-
-      if (loadedChunk != null) {
-        prevChunk = loadedChunk
-        prevChunkX = chunkX
-        prevChunkZ = chunkZ
-        return getFromChunk(loadedChunk, x, y, z)
-      }
+    if (Swift.getSettings().useWorldCache) {
+      return CachedWorld.getBlockState(x, y, z) ?: air
     }
 
-    return CachedWorld.getBlockState(x, y, z) ?: air
+    val chunkX = x shr 4
+    val chunkZ = z shr 4
+    val chunk = prevChunk
+
+    if (chunk != null && prevChunkX == chunkX && prevChunkZ == chunkZ) {
+      return getFromChunk(chunk, x, y, z)
+    }
+
+    val loadedChunk = world.chunkManager.getChunk(chunkX, chunkZ, ChunkStatus.FULL, false)
+
+    return if (loadedChunk != null) {
+      prevChunk = loadedChunk
+      prevChunkX = chunkX
+      prevChunkZ = chunkZ
+      getFromChunk(loadedChunk, x, y, z)
+    } else air
   }
 
   fun getFromChunk(chunk: Chunk, x: Int, y: Int, z: Int): BlockState {

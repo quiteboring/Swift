@@ -17,10 +17,9 @@ object CachedWorld {
   private val pendingChunks = ConcurrentLinkedQueue<Pair<Int, Int>>()
 
   private const val MAX_CACHED_CHUNKS = 1024
-  private const val CHUNKS_PER_TICK = 4
+  private const val CHUNKS_PER_TICK = 2
 
-  @Suppress("NOTHING_TO_INLINE")
-  private inline fun chunkKey(x: Int, z: Int): Long =
+  private fun chunkKey(x: Int, z: Int): Long =
     (x.toLong() shl 32) or (z.toLong() and 0xFFFFFFFFL)
 
   fun getBlockState(x: Int, y: Int, z: Int): BlockState? {
@@ -30,10 +29,24 @@ object CachedWorld {
 
   fun onPacketReceive(packet: Packet<*>) {
     when (packet) {
-      is ChunkDataS2CPacket -> pendingChunks.add(packet.chunkX to packet.chunkZ)
-      is BlockUpdateS2CPacket -> handleBlockUpdate(packet)
-      is ChunkDeltaUpdateS2CPacket -> handleChunkDelta(packet)
-      is UnloadChunkS2CPacket -> { /* Keep cached */ }
+      is ChunkDataS2CPacket -> {
+        pendingChunks.add(packet.chunkX to packet.chunkZ)
+      }
+
+      is BlockUpdateS2CPacket -> {
+        val pos = packet.pos
+        chunks[chunkKey(pos.x shr 4, pos.z shr 4)]?.set(
+          pos.x and 15, pos.y, pos.z and 15, packet.state
+        )
+      }
+
+      is ChunkDeltaUpdateS2CPacket -> {
+        packet.visitUpdates { pos, state ->
+          chunks[chunkKey(pos.x shr 4, pos.z shr 4)]?.set(
+            pos.x and 15, pos.y, pos.z and 15, state
+          )
+        }
+      }
     }
   }
 
@@ -83,21 +96,6 @@ object CachedWorld {
     }
   }
 
-  private fun handleBlockUpdate(packet: BlockUpdateS2CPacket) {
-    val pos = packet.pos
-    chunks[chunkKey(pos.x shr 4, pos.z shr 4)]?.set(
-      pos.x and 15, pos.y, pos.z and 15, packet.state
-    )
-  }
-
-  private fun handleChunkDelta(packet: ChunkDeltaUpdateS2CPacket) {
-    packet.visitUpdates { pos, state ->
-      chunks[chunkKey(pos.x shr 4, pos.z shr 4)]?.set(
-        pos.x and 15, pos.y, pos.z and 15, state
-      )
-    }
-  }
-
   private fun cleanupIfNeeded() {
     if (chunks.size < MAX_CACHED_CHUNKS + 256) return
 
@@ -111,4 +109,5 @@ object CachedWorld {
     chunks.clear()
     pendingChunks.clear()
   }
+
 }
