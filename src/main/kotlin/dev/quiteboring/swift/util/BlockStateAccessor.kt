@@ -22,8 +22,8 @@ class BlockStateAccessor(val world: World) {
   @JvmField val topY: Int = world.topYInclusive
   @JvmField val minSectionIndex: Int = world.bottomSectionCoord
 
-  inline fun get(x: Int, y: Int, z: Int): BlockState {
-    if (y < bottomY || y > topY) return air
+  fun get(x: Int, y: Int, z: Int): BlockState {
+    if (y !in bottomY..topY) return air
 
     val chunkX = x shr 4
     val chunkZ = z shr 4

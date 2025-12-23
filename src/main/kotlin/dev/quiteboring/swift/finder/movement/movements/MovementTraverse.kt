@@ -7,7 +7,7 @@ import dev.quiteboring.swift.finder.movement.MovementResult
 object MovementTraverse {
 
   @JvmStatic
-  inline fun calculateCost(
+  fun calculateCost(
     ctx: CalculationContext,
     x: Int, y: Int, z: Int,
     destX: Int, destZ: Int,
@@ -20,4 +20,5 @@ object MovementTraverse {
     res.z = destZ
     res.cost = ctx.cost.SPRINT_ONE_BLOCK_TIME + ctx.wdc.getPathPenalty(destX, y, destZ)
   }
+
 }

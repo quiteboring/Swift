@@ -11,7 +11,7 @@ object MovementHelper {
   val SHAPE_CONTEXT: ShapeContext = ShapeContext.absent()
 
   @JvmStatic
-  inline fun isSafe(bsa: BlockStateAccessor, x: Int, y: Int, z: Int): Boolean {
+  fun isSafe(bsa: BlockStateAccessor, x: Int, y: Int, z: Int): Boolean {
     if (!isSolid(bsa, x, y - 1, z)) return false
     if (!isPassable(bsa, x, y, z)) return false
     if (!isPassable(bsa, x, y + 1, z)) return false
@@ -19,13 +19,13 @@ object MovementHelper {
   }
 
   @JvmStatic
-  inline fun isSolid(bsa: BlockStateAccessor, x: Int, y: Int, z: Int): Boolean {
+  fun isSolid(bsa: BlockStateAccessor, x: Int, y: Int, z: Int): Boolean {
     val state = bsa.get(x, y, z)
     return isSolidState(bsa, x, y, z, state)
   }
 
   @JvmStatic
-  inline fun isSolidState(bsa: BlockStateAccessor, x: Int, y: Int, z: Int, state: BlockState): Boolean {
+  fun isSolidState(bsa: BlockStateAccessor, x: Int, y: Int, z: Int, state: BlockState): Boolean {
     if (state.isAir) return false
     if (state.block is CarpetBlock) return false
 
@@ -37,13 +37,13 @@ object MovementHelper {
   }
 
   @JvmStatic
-  inline fun isPassable(bsa: BlockStateAccessor, x: Int, y: Int, z: Int): Boolean {
+  fun isPassable(bsa: BlockStateAccessor, x: Int, y: Int, z: Int): Boolean {
     val state = bsa.get(x, y, z)
     return isPassableState(bsa, x, y, z, state)
   }
 
   @JvmStatic
-  inline fun isPassableState(bsa: BlockStateAccessor, x: Int, y: Int, z: Int, state: BlockState): Boolean {
+  fun isPassableState(bsa: BlockStateAccessor, x: Int, y: Int, z: Int, state: BlockState): Boolean {
     if (state.isAir) return true
     if (state.block is CarpetBlock) return true
 

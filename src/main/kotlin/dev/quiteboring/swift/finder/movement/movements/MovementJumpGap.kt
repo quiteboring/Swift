@@ -8,7 +8,7 @@ import kotlin.math.abs
 object MovementJumpGap {
 
   @JvmStatic
-  inline fun calculateCost(
+  fun calculateCost(
     ctx: CalculationContext,
     x: Int, y: Int, z: Int,
     destX: Int, destZ: Int,

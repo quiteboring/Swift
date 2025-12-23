@@ -7,7 +7,7 @@ import dev.quiteboring.swift.finder.movement.MovementResult
 object MovementDiagonal {
 
   @JvmStatic
-  inline fun calculateCost(
+  fun calculateCost(
     ctx: CalculationContext,
     x: Int, y: Int, z: Int,
     destX: Int, destZ: Int,
