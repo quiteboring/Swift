@@ -52,15 +52,12 @@ object PathCommand {
                         val mc = MinecraftClient.getInstance()
                         val chat = mc.inGameHud.chatHud
 
-                        val startX = standingOn.x
-                        val startY = standingOn.y + 1
-                        val startZ = standingOn.z
-                        val endY = y + 1
-
                         try {
                           val ctx = CalculationContext()
-                          val goal = Goal(x, endY, z, ctx)
-                          val result = AStarPathfinder(startX, startY, startZ, goal, ctx).findPath()
+                          val result = AStarPathfinder(
+                            standingOn.z, standingOn.y, standingOn.z,
+                            Goal(x, y, z, ctx), ctx
+                          ).findPath()
 
                           if (result != null) {
                             path = result
