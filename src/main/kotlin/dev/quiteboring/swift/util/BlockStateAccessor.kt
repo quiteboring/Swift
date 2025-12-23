@@ -1,6 +1,6 @@
 package dev.quiteboring.swift.util
 
-import dev.quiteboring.swift.cache.CachedRegion
+import dev.quiteboring.swift.cache.CachedChunk
 import dev.quiteboring.swift.cache.CachedWorld
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
@@ -13,7 +13,7 @@ import net.minecraft.world.chunk.ChunkStatus
 class BlockStateAccessor(val world: World) {
 
   var prev: Chunk? = null
-  var prevCached: CachedRegion? = null
+  var prevCached: CachedChunk? = null
 
   val mutablePos = BlockPos.Mutable()
   val access = BlockViewWrapper(this)
@@ -42,7 +42,7 @@ class BlockStateAccessor(val world: World) {
     var cached = prevCached
 
     if (cached == null || cached.x != x shr 9 || cached.z != z shr 9) {
-      val region: CachedRegion = CachedWorld.getRegion(x shr 9, z shr 9) ?: return air
+      val region: CachedChunk = CachedWorld.getChunk(x shr 9, z shr 9) ?: return air
 
       prevCached = region
       cached = region
