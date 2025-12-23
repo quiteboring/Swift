@@ -9,6 +9,9 @@
   "client": [
     "FrustumInvoker",
     "WorldRendererMixin"
+  ],
+  "mixins": [
+    "ClientConnectionMixin"
   ]
 }
 
