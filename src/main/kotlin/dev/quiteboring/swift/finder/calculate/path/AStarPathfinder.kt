@@ -51,7 +51,7 @@ class AStarPathfinder(
 
       if (goal.isAtGoal(cx, cy, cz)) {
         val elapsed = (System.nanoTime() - startTime) / 1_000_000
-        return Path(current, elapsed)
+        return Path(ctx, current, elapsed)
       }
 
       val currentCost = current.gCost

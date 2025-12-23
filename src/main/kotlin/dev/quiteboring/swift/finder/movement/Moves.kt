@@ -71,41 +71,42 @@ enum class Moves(val offsetX: Int, val offsetZ: Int) {
   DESCEND_WEST(-1, 0) {
     override fun calculate(ctx: CalculationContext, px: Int, py: Int, pz: Int, res: MovementResult) =
       MovementDescend.calculateCost(ctx, px, py, pz, px - 1, pz, res)
-  };
+  },
 
-//  JUMP_GAP_1_NORTH(0, -2) {
-//    override fun calculate(ctx: CalculationContext, px: Int, py: Int, pz: Int, res: MovementResult) =
-//      MovementJumpGap.calculateCost(ctx, px, py, pz, px, pz - 2, res)
-//  },
-//  JUMP_GAP_1_SOUTH(0, 2) {
-//    override fun calculate(ctx: CalculationContext, px: Int, py: Int, pz: Int, res: MovementResult) =
-//      MovementJumpGap.calculateCost(ctx, px, py, pz, px, pz + 2, res)
-//  },
-//  JUMP_GAP_1_EAST(2, 0) {
-//    override fun calculate(ctx: CalculationContext, px: Int, py: Int, pz: Int, res: MovementResult) =
-//      MovementJumpGap.calculateCost(ctx, px, py, pz, px + 2, pz, res)
-//  },
-//  JUMP_GAP_1_WEST(-2, 0) {
-//    override fun calculate(ctx: CalculationContext, px: Int, py: Int, pz: Int, res: MovementResult) =
-//      MovementJumpGap.calculateCost(ctx, px, py, pz, px - 2, pz, res)
-//  },
-//
-//  JUMP_GAP_2_NORTH(0, -3) {
-//    override fun calculate(ctx: CalculationContext, px: Int, py: Int, pz: Int, res: MovementResult) =
-//      MovementJumpGap.calculateCost(ctx, px, py, pz, px, pz - 3, res)
-//  },
-//  JUMP_GAP_2_SOUTH(0, 3) {
-//    override fun calculate(ctx: CalculationContext, px: Int, py: Int, pz: Int, res: MovementResult) =
-//      MovementJumpGap.calculateCost(ctx, px, py, pz, px, pz + 3, res)
-//  },
-//  JUMP_GAP_2_EAST(3, 0) {
-//    override fun calculate(ctx: CalculationContext, px: Int, py: Int, pz: Int, res: MovementResult) =
-//      MovementJumpGap.calculateCost(ctx, px, py, pz, px + 3, pz, res)
-//  },
-//  JUMP_GAP_2_WEST(-3, 0) {
-//    override fun calculate(ctx: CalculationContext, px: Int, py: Int, pz: Int, res: MovementResult) =
-//      MovementJumpGap.calculateCost(ctx, px, py, pz, px - 3, pz, res)
-//  };
+  // Jump a gap to shorten paths (credit: oblongboot)
+  JUMP_GAP_1_NORTH(0, -2) {
+    override fun calculate(ctx: CalculationContext, px: Int, py: Int, pz: Int, res: MovementResult) =
+      MovementJumpGap.calculateCost(ctx, px, py, pz, px, pz - 2, res)
+  },
+  JUMP_GAP_1_SOUTH(0, 2) {
+    override fun calculate(ctx: CalculationContext, px: Int, py: Int, pz: Int, res: MovementResult) =
+      MovementJumpGap.calculateCost(ctx, px, py, pz, px, pz + 2, res)
+  },
+  JUMP_GAP_1_EAST(2, 0) {
+    override fun calculate(ctx: CalculationContext, px: Int, py: Int, pz: Int, res: MovementResult) =
+      MovementJumpGap.calculateCost(ctx, px, py, pz, px + 2, pz, res)
+  },
+  JUMP_GAP_1_WEST(-2, 0) {
+    override fun calculate(ctx: CalculationContext, px: Int, py: Int, pz: Int, res: MovementResult) =
+      MovementJumpGap.calculateCost(ctx, px, py, pz, px - 2, pz, res)
+  },
+
+  JUMP_GAP_2_NORTH(0, -3) {
+    override fun calculate(ctx: CalculationContext, px: Int, py: Int, pz: Int, res: MovementResult) =
+      MovementJumpGap.calculateCost(ctx, px, py, pz, px, pz - 3, res)
+  },
+  JUMP_GAP_2_SOUTH(0, 3) {
+    override fun calculate(ctx: CalculationContext, px: Int, py: Int, pz: Int, res: MovementResult) =
+      MovementJumpGap.calculateCost(ctx, px, py, pz, px, pz + 3, res)
+  },
+  JUMP_GAP_2_EAST(3, 0) {
+    override fun calculate(ctx: CalculationContext, px: Int, py: Int, pz: Int, res: MovementResult) =
+      MovementJumpGap.calculateCost(ctx, px, py, pz, px + 3, pz, res)
+  },
+  JUMP_GAP_2_WEST(-3, 0) {
+    override fun calculate(ctx: CalculationContext, px: Int, py: Int, pz: Int, res: MovementResult) =
+      MovementJumpGap.calculateCost(ctx, px, py, pz, px - 3, pz, res)
+  };
 
   abstract fun calculate(ctx: CalculationContext, px: Int, py: Int, pz: Int, res: MovementResult)
 }

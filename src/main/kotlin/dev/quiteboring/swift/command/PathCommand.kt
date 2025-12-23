@@ -84,7 +84,7 @@ object PathCommand {
 
     var prev: Vec3d? = null
 
-    for (pos in currentPath.points) {
+    for (pos in currentPath.keyNodes) {
       val center = Vec3d(pos.x + 0.5, pos.y.toDouble(), pos.z + 0.5)
 
       prev?.let { vec ->
