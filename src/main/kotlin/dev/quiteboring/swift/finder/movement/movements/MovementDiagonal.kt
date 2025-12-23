@@ -1,33 +1,28 @@
 package dev.quiteboring.swift.finder.movement.movements
 
 import dev.quiteboring.swift.finder.movement.CalculationContext
-import dev.quiteboring.swift.finder.movement.Movement
 import dev.quiteboring.swift.finder.movement.MovementHelper
 import dev.quiteboring.swift.finder.movement.MovementResult
-import net.minecraft.util.math.BlockPos
 
-class MovementDiagonal(from: BlockPos, to: BlockPos) : Movement(from, to) {
+object MovementDiagonal {
 
-  override fun calculateCost(ctx: CalculationContext, res: MovementResult) {
-    calculateCost(ctx, source.x, source.y, source.z, target.x, target.z, res)
-    costs = res.cost
+  @JvmStatic
+  inline fun calculateCost(
+    ctx: CalculationContext,
+    x: Int, y: Int, z: Int,
+    destX: Int, destZ: Int,
+    res: MovementResult
+  ) {
+    if (!MovementHelper.isSafe(ctx.bsa, destX, y, destZ)) return
+
+    val bsa = ctx.bsa
+
+    if (MovementHelper.isSolid(bsa, x, y, destZ) || MovementHelper.isSolid(bsa, destX, y, z)) return
+    if (MovementHelper.isSolid(bsa, x, y + 1, destZ) || MovementHelper.isSolid(bsa, destX, y + 1, z)) return
+
+    res.x = destX
+    res.y = y
+    res.z = destZ
+    res.cost = ctx.cost.SPRINT_DIAGONAL_TIME + ctx.wdc.getPathPenalty(destX, y, destZ)
   }
-
-  companion object {
-    fun calculateCost(
-      ctx: CalculationContext,
-      x: Int, y: Int, z: Int,
-      destX: Int, destZ: Int,
-      res: MovementResult
-    ) {
-      if (!MovementHelper.isSafe(ctx.bsa, destX, y, destZ)) return
-
-      if (MovementHelper.isSolid(ctx.bsa, x, y, destZ) || MovementHelper.isSolid(ctx.bsa, destX, y, z)) return
-      if (MovementHelper.isSolid(ctx.bsa, x, y + 1, destZ) || MovementHelper.isSolid(ctx.bsa, destX, y + 1, z)) return
-
-      res.set(destX, y, destZ)
-      res.cost = ctx.cost.SPRINT_DIAGONAL_TIME + ctx.wdc.getPathPenalty(destX, y, destZ)
-    }
-  }
-
 }

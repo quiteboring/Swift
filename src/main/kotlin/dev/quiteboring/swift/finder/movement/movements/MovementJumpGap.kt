@@ -1,54 +1,50 @@
 package dev.quiteboring.swift.finder.movement.movements
 
 import dev.quiteboring.swift.finder.movement.CalculationContext
-import dev.quiteboring.swift.finder.movement.Movement
 import dev.quiteboring.swift.finder.movement.MovementHelper
 import dev.quiteboring.swift.finder.movement.MovementResult
 import kotlin.math.abs
-import net.minecraft.util.math.BlockPos
 
-class MovementJumpGap(from: BlockPos, to: BlockPos) : Movement(from, to) {
+object MovementJumpGap {
 
-  override fun calculateCost(ctx: CalculationContext, res: MovementResult) {
-    calculateCost(ctx, source.x, source.y, source.z, target.x, target.z, res)
-    costs = res.cost
-  }
+  @JvmStatic
+  inline fun calculateCost(
+    ctx: CalculationContext,
+    x: Int, y: Int, z: Int,
+    destX: Int, destZ: Int,
+    res: MovementResult
+  ) {
+    val bsa = ctx.bsa
 
-  companion object {
+    if (!MovementHelper.isSafe(bsa, destX, y, destZ)) return
+    if (!MovementHelper.isPassable(bsa, x, y + 2, z)) return
 
-    fun calculateCost(
-      ctx: CalculationContext,
-      x: Int, y: Int, z: Int,
-      destX: Int, destZ: Int,
-      res: MovementResult
-    ) {
-      if (!MovementHelper.isSafe(ctx.bsa, destX, y, destZ)) return
+    val dx = destX - x
+    val dz = destZ - z
+    val dist = if (dx != 0) abs(dx) else abs(dz)
 
-      val dx = destX - x
-      val dz = destZ - z
-      val dist = if (dx != 0) abs(dx) else abs(dz)
-      val dirX = if (dx != 0) dx / dist else 0
-      val dirZ = if (dz != 0) dz / dist else 0
+    if (dx != 0 && dz != 0) return
 
-      if (!MovementHelper.isPassable(ctx.bsa, x, y + 2, z)) return
+    val dirX = if (dx != 0) dx / dist else 0
+    val dirZ = if (dz != 0) dz / dist else 0
 
-      for (i in 1 until dist) {
-        val checkX = x + (dirX * i)
-        val checkZ = z + (dirZ * i)
-        if (!MovementHelper.isPassable(ctx.bsa, checkX, y, checkZ)) return
-        if (!MovementHelper.isPassable(ctx.bsa, checkX, y + 1, checkZ)) return
-        if (!MovementHelper.isPassable(ctx.bsa, checkX, y + 2, checkZ)) return
-      }
+    for (i in 1 until dist) {
+      val checkX = x + (dirX * i)
+      val checkZ = z + (dirZ * i)
 
-      res.set(destX, y, destZ)
-
-      var cost = ctx.cost.JUMP_PENALTY + (ctx.cost.SPRINT_ONE_BLOCK_TIME * dist)
-      cost += ctx.cost.GAP_JUMP_REWARD_OFFSET
-
-      cost += ctx.wdc.getPathPenalty(destX, y, destZ)
-      res.cost = cost
+      if (!MovementHelper.isPassable(bsa, checkX, y, checkZ)) return
+      if (!MovementHelper.isPassable(bsa, checkX, y + 1, checkZ)) return
+      if (!MovementHelper.isPassable(bsa, checkX, y + 2, checkZ)) return
     }
 
-  }
+    res.x = destX
+    res.y = y
+    res.z = destZ
 
+    val cost = ctx.cost
+    res.cost = cost.JUMP_PENALTY +
+      (cost.SPRINT_ONE_BLOCK_TIME * dist) +
+      cost.GAP_JUMP_REWARD_OFFSET +
+      ctx.wdc.getPathPenalty(destX, y, destZ)
+  }
 }

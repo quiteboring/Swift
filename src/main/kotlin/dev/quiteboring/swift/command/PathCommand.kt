@@ -1,21 +1,21 @@
 package dev.quiteboring.swift.command
 
 import com.mojang.brigadier.arguments.IntegerArgumentType
+import dev.quiteboring.swift.event.Context
 import dev.quiteboring.swift.finder.calculate.Path
 import dev.quiteboring.swift.finder.calculate.path.AStarPathfinder
-import dev.quiteboring.swift.event.Context
 import dev.quiteboring.swift.finder.goal.Goal
 import dev.quiteboring.swift.finder.movement.CalculationContext
 import dev.quiteboring.swift.util.PlayerUtils
 import dev.quiteboring.swift.util.render.drawBox
 import dev.quiteboring.swift.util.render.drawLine
-import java.awt.Color
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.minecraft.client.MinecraftClient
 import net.minecraft.text.Text
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.Vec3d
+import java.awt.Color
 
 object PathCommand {
 
@@ -23,63 +23,84 @@ object PathCommand {
 
   fun dispatch() {
     ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
-      val xArg = ClientCommandManager.argument("x", IntegerArgumentType.integer())
-      val yArg = ClientCommandManager.argument("y", IntegerArgumentType.integer())
-      val zArg = ClientCommandManager.argument("z", IntegerArgumentType.integer())
+      dispatcher.register(
+        ClientCommandManager.literal("pathfind")
+          .then(ClientCommandManager.literal("clear").executes {
+            path = null
+            MinecraftClient.getInstance().inGameHud.chatHud.addMessage(Text.of("Rendering Cleared"))
+            1
+          })
+          .then(
+            ClientCommandManager.argument("x", IntegerArgumentType.integer())
+              .then(
+                ClientCommandManager.argument("y", IntegerArgumentType.integer())
+                  .then(
+                    ClientCommandManager.argument("z", IntegerArgumentType.integer())
+                      .executes { context ->
+                        val x = IntegerArgumentType.getInteger(context, "x")
+                        val y = IntegerArgumentType.getInteger(context, "y")
+                        val z = IntegerArgumentType.getInteger(context, "z")
 
-      val pathfindCommand = ClientCommandManager.literal("pathfind")
-        .then(ClientCommandManager.literal("clear").executes {
-          this.path = null
-          MinecraftClient.getInstance().inGameHud.chatHud.addMessage(Text.of("Rendering Cleared"))
-          1
-        })
-        .then(xArg.then(yArg.then(zArg.executes { context ->
-          val x = IntegerArgumentType.getInteger(context, "x")
-          val y = IntegerArgumentType.getInteger(context, "y")
-          val z = IntegerArgumentType.getInteger(context, "z")
+                        val standingOn = PlayerUtils.getBlockStandingOn()
+                        if (standingOn == null) {
+                          MinecraftClient.getInstance().inGameHud.chatHud.addMessage(
+                            Text.of("§cCouldn't get player position")
+                          )
+                          return@executes 1
+                        }
 
-          val player = PlayerUtils.getBlockStandingOn() ?: return@executes 1
-          val ctx = CalculationContext()
+                        val mc = MinecraftClient.getInstance()
+                        val chat = mc.inGameHud.chatHud
 
-          AStarPathfinder(
-            player.x, player.y, player.z,
-            Goal(x, y, z, ctx), ctx
-          ).findPath()?.let {
-            this.path = it
-            MinecraftClient.getInstance().inGameHud.chatHud.addMessage(Text.of("${it.timeTaken} ms"))
-          }
+                        val startX = standingOn.x
+                        val startY = standingOn.y + 1
+                        val startZ = standingOn.z
+                        val endY = y + 1
 
-          return@executes 1
-        })))
+                        try {
+                          val ctx = CalculationContext()
+                          val goal = Goal(x, endY, z, ctx)
+                          val result = AStarPathfinder(startX, startY, startZ, goal, ctx).findPath()
 
-      dispatcher.register(pathfindCommand)
+                          if (result != null) {
+                            path = result
+                            chat.addMessage(Text.of("§aPath found in ${result.timeTaken}ms (${result.points.size} nodes)"))
+                          } else {
+                            chat.addMessage(Text.of("§cNo path found"))
+                          }
+                        } catch (e: Exception) {
+                          chat.addMessage(Text.of("§cError: ${e.message}"))
+                          e.printStackTrace()
+                        }
+
+                        1
+                      }
+                  )
+              )
+          )
+      )
     }
   }
 
   fun onRender(ctx: Context) {
-    path?.let {
-      var prev: Vec3d? = null
+    val currentPath = path ?: return
 
-      it.points.forEach { pos ->
-        val center = Vec3d(
-          pos.x + 0.5,
-          pos.y.toDouble(),
-          pos.z + 0.5
-        )
+    var prev: Vec3d? = null
 
-        prev?.let { vec ->
-          ctx.drawLine(vec, center, color = Color(255, 132, 94), thickness = 1F)
-        }
+    for (pos in currentPath.points) {
+      val center = Vec3d(pos.x + 0.5, pos.y.toDouble(), pos.z + 0.5)
 
-        val box = Box(
-          pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble(),
-          pos.x + 1.0, pos.y - 1.0, pos.z + 1.0
-        )
-
-        ctx.drawBox(box, color = Color(255, 132, 94))
-        prev = center
+      prev?.let { vec ->
+        ctx.drawLine(vec, center, color = Color(255, 132, 94), thickness = 1F)
       }
+
+      val box = Box(
+        pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble(),
+        pos.x + 1.0, pos.y - 1.0, pos.z + 1.0
+      )
+
+      ctx.drawBox(box, color = Color(255, 132, 94))
+      prev = center
     }
   }
-
 }

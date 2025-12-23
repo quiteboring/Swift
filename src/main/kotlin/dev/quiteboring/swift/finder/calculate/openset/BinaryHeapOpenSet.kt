@@ -2,11 +2,12 @@ package dev.quiteboring.swift.finder.calculate.openset
 
 import dev.quiteboring.swift.finder.calculate.PathNode
 
-class BinaryHeapOpenSet(initialSize: Int = 1024) {
+class BinaryHeapOpenSet(initialSize: Int = 2048) {
 
   private var items = arrayOfNulls<PathNode>(initialSize)
+
+  @JvmField
   var size = 0
-    private set
 
   fun add(node: PathNode) {
     if (size >= items.size - 1) {
@@ -16,15 +17,16 @@ class BinaryHeapOpenSet(initialSize: Int = 1024) {
     size++
     node.heapPosition = size
     items[size] = node
-    siftUp(node)
+    siftUp(size)
   }
 
   fun relocate(node: PathNode) {
-    siftUp(node)
+    siftUp(node.heapPosition)
   }
 
-  private fun siftUp(node: PathNode) {
-    var pos = node.heapPosition
+  private fun siftUp(startPos: Int) {
+    var pos = startPos
+    val node = items[pos]!!
     val cost = node.fCost
 
     while (pos > 1) {
@@ -46,21 +48,25 @@ class BinaryHeapOpenSet(initialSize: Int = 1024) {
     val result = items[1]!!
     result.heapPosition = -1
 
+    if (size == 1) {
+      items[1] = null
+      size = 0
+      return result
+    }
+
     val last = items[size]!!
     items[size] = null
     size--
-
-    if (size > 0) {
-      items[1] = last
-      last.heapPosition = 1
-      siftDown(last)
-    }
+    items[1] = last
+    last.heapPosition = 1
+    siftDown()
 
     return result
   }
 
-  private fun siftDown(node: PathNode) {
+  private fun siftDown() {
     var pos = 1
+    val node = items[1]!!
     val cost = node.fCost
     val halfSize = size ushr 1
 
@@ -88,5 +94,17 @@ class BinaryHeapOpenSet(initialSize: Int = 1024) {
     node.heapPosition = pos
   }
 
-  fun isEmpty() = size == 0
+  @Suppress("NOTHING_TO_INLINE")
+  inline fun isEmpty() = size == 0
+
+  @Suppress("NOTHING_TO_INLINE")
+  inline fun isNotEmpty() = size > 0
+
+  fun clear() {
+    for (i in 1..size) {
+      items[i]?.heapPosition = -1
+      items[i] = null
+    }
+    size = 0
+  }
 }

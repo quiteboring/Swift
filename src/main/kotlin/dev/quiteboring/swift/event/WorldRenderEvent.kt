@@ -2,10 +2,6 @@ package dev.quiteboring.swift.event
 
 import net.fabricmc.fabric.api.event.Event
 import net.fabricmc.fabric.api.event.EventFactory
-import net.minecraft.client.render.Camera
-import net.minecraft.client.render.Frustum
-import net.minecraft.client.render.VertexConsumerProvider
-import net.minecraft.client.util.math.MatrixStack
 
 object WorldRenderEvent {
 
@@ -18,18 +14,12 @@ object WorldRenderEvent {
   }
 
   @JvmField
-  val START = bake<StartEvent> { v -> StartEvent { ctx -> v.forEach { it.trigger(ctx) } } }
+  val START: Event<StartEvent> = EventFactory.createArrayBacked(StartEvent::class.java) { listeners ->
+    StartEvent { ctx -> listeners.forEach { it.trigger(ctx) } }
+  }
 
   @JvmField
-  val LAST = bake<LastEvent> { v -> LastEvent { ctx -> v.forEach { it.trigger(ctx) } } }
-
-  private inline fun <reified T> bake(noinline v: (Array<T>) -> T): Event<T> =
-    EventFactory.createArrayBacked(T::class.java, v)
-}
-
-class Context {
-  var matrixStack: MatrixStack? = null
-  lateinit var consumers: VertexConsumerProvider
-  lateinit var camera: Camera
-  lateinit var frustum: Frustum
+  val LAST: Event<LastEvent> = EventFactory.createArrayBacked(LastEvent::class.java) { listeners ->
+    LastEvent { ctx -> listeners.forEach { it.trigger(ctx) } }
+  }
 }

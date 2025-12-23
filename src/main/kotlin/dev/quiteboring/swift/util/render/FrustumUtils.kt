@@ -8,7 +8,7 @@ import org.joml.FrustumIntersection
 object FrustumUtils {
 
   fun isVisible(frustum: Frustum, box: Box): Boolean {
-    return isVisible(frustum, box)
+    return isVisible(frustum, box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ)
   }
 
   fun isVisible(
@@ -20,9 +20,7 @@ object FrustumUtils {
     maxY: Double,
     maxZ: Double,
   ): Boolean {
-    val plane: Int = (frustum as FrustumInvoker).invokeIntersectAab(minX, minY, minZ, maxX, maxY, maxZ)
-
-    return plane == FrustumIntersection.INSIDE || plane == FrustumIntersection.INTERSECT
+    val result = (frustum as FrustumInvoker).invokeIntersectAab(minX, minY, minZ, maxX, maxY, maxZ)
+    return result == FrustumIntersection.INSIDE || result == FrustumIntersection.INTERSECT
   }
-
 }

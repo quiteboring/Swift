@@ -6,6 +6,7 @@ import dev.quiteboring.swift.command.PathCommand
 import dev.quiteboring.swift.event.PacketEvent
 import dev.quiteboring.swift.event.WorldRenderEvent
 import net.fabricmc.api.ClientModInitializer
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 
 class Swift : ClientModInitializer {
 
@@ -21,6 +22,11 @@ class Swift : ClientModInitializer {
     PacketEvent.RECEIVE.register { packet ->
       CachedWorld.onPacketReceive(packet)
     }
-  }
 
+    ClientTickEvents.END_CLIENT_TICK.register { client ->
+      if (client.world != null) {
+        CachedWorld.processPendingChunks()
+      }
+    }
+  }
 }
