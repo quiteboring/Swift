@@ -17,7 +17,7 @@ class CachedChunk(
   val lastAccessTime: Long get() = _lastAccessTime.get()
 
   fun get(localX: Int, y: Int, localZ: Int): BlockState? {
-    if (y < minY || y >= maxY) return null
+    if (y !in minY..<maxY) return null
 
     _lastAccessTime.lazySet(System.currentTimeMillis())
 
@@ -28,7 +28,7 @@ class CachedChunk(
   }
 
   fun set(localX: Int, y: Int, localZ: Int, state: BlockState) {
-    if (y < minY || y >= maxY) return
+    if (y !in minY..<maxY) return
 
     _lastAccessTime.lazySet(System.currentTimeMillis())
 
@@ -44,18 +44,22 @@ class CachedChunk(
       sections[sectionIndex] = section
     }
   }
+
 }
 
 class CachedSection {
+
   @Volatile
   private var blocks: Array<BlockState?> = arrayOfNulls(4096)
 
-  @Suppress("NOTHING_TO_INLINE")
-  private inline fun index(x: Int, y: Int, z: Int): Int = (y shl 8) or (z shl 4) or x
+  private fun index(x: Int, y: Int, z: Int): Int =
+    (y shl 8) or (z shl 4) or x
 
-  fun get(x: Int, y: Int, z: Int): BlockState? = blocks[index(x, y, z)]
+  fun get(x: Int, y: Int, z: Int): BlockState? =
+    blocks[index(x, y, z)]
 
   fun set(x: Int, y: Int, z: Int, state: BlockState) {
     blocks[index(x, y, z)] = state
   }
+
 }

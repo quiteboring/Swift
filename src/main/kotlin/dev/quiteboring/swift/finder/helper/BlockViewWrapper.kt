@@ -1,4 +1,4 @@
-package dev.quiteboring.swift.util
+package dev.quiteboring.swift.finder.helper
 
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntity

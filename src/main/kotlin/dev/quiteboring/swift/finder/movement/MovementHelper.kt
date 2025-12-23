@@ -1,6 +1,6 @@
 package dev.quiteboring.swift.finder.movement
 
-import dev.quiteboring.swift.util.BlockStateAccessor
+import dev.quiteboring.swift.finder.helper.BlockStateAccessor
 import net.minecraft.block.BlockState
 import net.minecraft.block.CarpetBlock
 import net.minecraft.block.ShapeContext

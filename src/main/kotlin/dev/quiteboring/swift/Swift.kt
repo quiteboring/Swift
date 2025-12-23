@@ -5,18 +5,21 @@ import dev.quiteboring.swift.command.HeatmapCommand
 import dev.quiteboring.swift.command.PathCommand
 import dev.quiteboring.swift.event.PacketEvent
 import dev.quiteboring.swift.event.WorldRenderEvent
+import dev.quiteboring.swift.util.setting.Settings
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 
-class Swift : ClientModInitializer {
+object Swift : ClientModInitializer {
+
+  private val settings = Settings()
 
   override fun onInitializeClient() {
     PathCommand.dispatch()
     HeatmapCommand.dispatch()
 
-    WorldRenderEvent.LAST.register { context ->
-      PathCommand.onRender(context)
-      HeatmapCommand.onRender(context)
+    WorldRenderEvent.LAST.register { ctx ->
+      PathCommand.onRender(ctx)
+      HeatmapCommand.onRender(ctx)
     }
 
     PacketEvent.RECEIVE.register { packet ->
@@ -29,4 +32,10 @@ class Swift : ClientModInitializer {
       }
     }
   }
+
+  @JvmStatic
+  fun getSettings(): Settings {
+    return settings
+  }
+
 }

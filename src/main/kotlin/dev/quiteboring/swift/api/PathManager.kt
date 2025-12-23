@@ -10,99 +10,98 @@ import net.minecraft.util.math.BlockPos
 /**
  * Thank you EpsilonPhoenix for this superb class!
  */
-object PathManager {
+class PathManager {
 
-  @JvmStatic var lastPath: Path? = null
-    private set
+  companion object {
 
-  @JvmStatic var lastKeyNodes: List<BlockPos> = emptyList()
-    private set
+    var lastPath: Path? = null
+      private set
 
-  @JvmStatic var lastError: String? = null
-    private set
+    var lastKeyNodes: List<BlockPos> = emptyList()
+      private set
 
-  @JvmStatic var lastTimeMs: Long = 0
-    private set
+    var lastError: String? = null
+      private set
 
-  @JvmStatic
-  fun findPath(
-    startX: Int, startY: Int, startZ: Int,
-    endX: Int, endY: Int, endZ: Int
-  ): Boolean {
-    val mc = MinecraftClient.getInstance()
+    var lastTimeMs: Long = 0
+      private set
 
-    if (mc.world == null || mc.player == null) {
-      lastError = "Not in world"
-      lastPath = null
-      lastKeyNodes = emptyList()
-      return false
-    }
+    fun findPath(
+      startX: Int, startY: Int, startZ: Int,
+      endX: Int, endY: Int, endZ: Int,
+    ): Boolean {
+      val mc = MinecraftClient.getInstance()
 
-    return try {
-      val ctx = CalculationContext()
-      val goal = Goal(endX, endY, endZ, ctx)
-      val pathfinder = AStarPathfinder(startX, startY, startZ, goal, ctx)
-      val path = pathfinder.findPath()
-
-      if (path == null) {
-        lastError = "No path found"
+      if (mc.world == null || mc.player == null) {
+        lastError = "Not in world"
         lastPath = null
         lastKeyNodes = emptyList()
-        false
-      } else {
-        lastPath = path
-        lastKeyNodes = path.keyNodes
-        lastTimeMs = path.timeTaken
-        lastError = null
-        println("[Swift] Path: ${path.points.size} nodes, ${lastKeyNodes.size} keynodes, ${path.timeTaken}ms")
-        true
+        return false
       }
-    } catch (e: Exception) {
-      lastError = e.message ?: "Unknown error"
+
+      return try {
+        val ctx = CalculationContext()
+        val goal = Goal(endX, endY, endZ, ctx)
+        val pathfinder = AStarPathfinder(startX, startY, startZ, goal, ctx)
+        val path = pathfinder.findPath()
+
+        if (path == null) {
+          lastError = "No path found"
+          lastPath = null
+          lastKeyNodes = emptyList()
+          false
+        } else {
+          lastPath = path
+          lastKeyNodes = path.keyNodes
+          lastTimeMs = path.timeTaken
+          lastError = null
+          println("[Swift] Path: ${path.points.size} nodes, ${lastKeyNodes.size} keynodes, ${path.timeTaken}ms")
+          true
+        }
+      } catch (e: Exception) {
+        lastError = e.message ?: "Unknown error"
+        lastPath = null
+        lastKeyNodes = emptyList()
+        e.printStackTrace()
+        false
+      }
+    }
+
+    fun getPathArray(): IntArray {
+      val path = lastPath ?: return IntArray(0)
+      val result = IntArray(path.points.size * 3)
+      var i = 0
+      for (p in path.points) {
+        result[i++] = p.x
+        result[i++] = p.y - 1
+        result[i++] = p.z
+      }
+      return result
+    }
+
+    fun getKeyNodesArray(): IntArray {
+      val nodes = lastKeyNodes
+      val result = IntArray(nodes.size * 3)
+      var i = 0
+      for (n in nodes) {
+        result[i++] = n.x
+        result[i++] = n.y - 1
+        result[i++] = n.z
+      }
+      return result
+    }
+
+    fun getPathSize(): Int = lastPath?.points?.size ?: 0
+
+    fun getKeyNodeCount(): Int = lastKeyNodes.size
+
+    fun clear() {
       lastPath = null
       lastKeyNodes = emptyList()
-      e.printStackTrace()
-      false
+      lastError = null
+      lastTimeMs = 0
     }
+    
   }
 
-  @JvmStatic
-  fun getPathArray(): IntArray {
-    val path = lastPath ?: return IntArray(0)
-    val result = IntArray(path.points.size * 3)
-    var i = 0
-    for (p in path.points) {
-      result[i++] = p.x
-      result[i++] = p.y - 1
-      result[i++] = p.z
-    }
-    return result
-  }
-
-  @JvmStatic
-  fun getKeyNodesArray(): IntArray {
-    val nodes = lastKeyNodes
-    val result = IntArray(nodes.size * 3)
-    var i = 0
-    for (n in nodes) {
-      result[i++] = n.x
-      result[i++] = n.y - 1
-      result[i++] = n.z
-    }
-    return result
-  }
-
-  @JvmStatic
-  fun getPathSize(): Int = lastPath?.points?.size ?: 0
-
-  @JvmStatic
-  fun getKeyNodeCount(): Int = lastKeyNodes.size
-
-  @JvmStatic
-  fun clear() {
-    lastPath = null
-    lastKeyNodes = emptyList()
-    lastError = null
-    lastTimeMs = 0
-  }
 }

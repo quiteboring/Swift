@@ -1,5 +1,6 @@
-package dev.quiteboring.swift.util
+package dev.quiteboring.swift.finder.helper
 
+import dev.quiteboring.swift.Swift
 import dev.quiteboring.swift.cache.CachedWorld
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
@@ -30,22 +31,25 @@ class BlockStateAccessor(val world: World) {
 
     val chunk = prevChunk
     if (chunk != null && prevChunkX == chunkX && prevChunkZ == chunkZ) {
-      return getFromChunkFast(chunk, x, y, z)
+      return getFromChunk(chunk, x, y, z)
     }
 
     val loadedChunk = world.chunkManager.getChunk(chunkX, chunkZ, ChunkStatus.FULL, false)
+
     if (loadedChunk != null) {
       prevChunk = loadedChunk
       prevChunkX = chunkX
       prevChunkZ = chunkZ
-      return getFromChunkFast(loadedChunk, x, y, z)
+      return getFromChunk(loadedChunk, x, y, z)
     }
 
-    return CachedWorld.getBlockState(x, y, z) ?: air
+    return CachedWorld
+      .takeIf { Swift.getSettings().useCache }
+      ?.getBlockState(x, y, z)
+      ?: air
   }
 
-  @Suppress("NOTHING_TO_INLINE")
-  inline fun getFromChunkFast(chunk: Chunk, x: Int, y: Int, z: Int): BlockState {
+  fun getFromChunk(chunk: Chunk, x: Int, y: Int, z: Int): BlockState {
     val sectionIndex = (y shr 4) - minSectionIndex
     val sections = chunk.sectionArray
 
@@ -57,9 +61,4 @@ class BlockStateAccessor(val world: World) {
     return section.getBlockState(x and 15, y and 15, z and 15)
   }
 
-  fun invalidate() {
-    prevChunk = null
-    prevChunkX = Int.MIN_VALUE
-    prevChunkZ = Int.MIN_VALUE
-  }
 }

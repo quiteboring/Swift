@@ -1,7 +1,7 @@
 package dev.quiteboring.swift.finder.movement
 
 import dev.quiteboring.swift.finder.costs.ActionCosts
-import dev.quiteboring.swift.util.BlockStateAccessor
+import dev.quiteboring.swift.finder.helper.BlockStateAccessor
 import net.minecraft.block.BlockState
 import net.minecraft.client.MinecraftClient
 import net.minecraft.entity.effect.StatusEffects
@@ -19,8 +19,7 @@ class CalculationContext {
 
   @JvmField val wdc = WallDistanceCalculator(this)
 
-  @Suppress("NOTHING_TO_INLINE")
-  inline fun get(x: Int, y: Int, z: Int): BlockState {
+  fun get(x: Int, y: Int, z: Int): BlockState {
     return bsa.get(x, y, z)
   }
 }
