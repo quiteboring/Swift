@@ -4,7 +4,6 @@ import dev.quiteboring.swift.finder.movement.CalculationContext
 import dev.quiteboring.swift.finder.movement.Movement
 import dev.quiteboring.swift.finder.movement.MovementHelper
 import dev.quiteboring.swift.finder.movement.MovementResult
-import dev.quiteboring.swift.util.BlockUtils
 import net.minecraft.block.*
 import net.minecraft.util.math.BlockPos
 
@@ -22,8 +21,8 @@ class MovementAscend(from: BlockPos, to: BlockPos) : Movement(from, to) {
       destX: Int, destZ: Int,
       res: MovementResult
     ) {
-      if (!MovementHelper.isSafe(ctx, destX, y + 1, destZ)) return
-      if (!BlockUtils.isPassable(ctx, x, y + 2, z)) return
+      if (!MovementHelper.isSafe(ctx.bsa, destX, y + 1, destZ)) return
+      if (!MovementHelper.isPassable(ctx.bsa, x, y + 2, z)) return
 
       res.set(destX, y + 1, destZ)
 

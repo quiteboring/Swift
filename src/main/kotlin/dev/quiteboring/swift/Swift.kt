@@ -1,6 +1,5 @@
 package dev.quiteboring.swift
 
-import dev.quiteboring.swift.cache.CachedWorld
 import dev.quiteboring.swift.command.HeatmapCommand
 import dev.quiteboring.swift.command.PathCommand
 import dev.quiteboring.swift.event.PacketEvent
@@ -16,10 +15,6 @@ class Swift : ClientModInitializer {
     WorldRenderEvent.LAST.register { context ->
       PathCommand.onRender(context)
       HeatmapCommand.onRender(context)
-    }
-
-    PacketEvent.RECEIVE.register { packet ->
-      CachedWorld.onPacketReceived(packet)
     }
   }
 

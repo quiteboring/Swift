@@ -98,55 +98,55 @@ enum class Moves(val offsetX: Int, val offsetZ: Int) {
     override fun calculate(ctx: CalculationContext, parentX: Int, parentY: Int, parentZ: Int, res: MovementResult) {
       MovementDiagonal.calculateCost(ctx, parentX, parentY, parentZ, parentX + offsetX, parentZ + offsetZ, res)
     }
-  };
+  },
 
-//  JUMP_GAP_1_NORTH(0, -2) {
-//    override fun calculate(ctx: CalculationContext, parentX: Int, parentY: Int, parentZ: Int, res: MovementResult) {
-//      MovementJumpGap.calculateCost(ctx, parentX, parentY, parentZ, parentX + offsetX, parentZ + offsetZ, res)
-//    }
-//  },
-//
-//  JUMP_GAP_1_SOUTH(0, +2) {
-//    override fun calculate(ctx: CalculationContext, parentX: Int, parentY: Int, parentZ: Int, res: MovementResult) {
-//      MovementJumpGap.calculateCost(ctx, parentX, parentY, parentZ, parentX + offsetX, parentZ + offsetZ, res)
-//    }
-//  },
-//
-//  JUMP_GAP_1_EAST(+2, 0) {
-//    override fun calculate(ctx: CalculationContext, parentX: Int, parentY: Int, parentZ: Int, res: MovementResult) {
-//      MovementJumpGap.calculateCost(ctx, parentX, parentY, parentZ, parentX + offsetX, parentZ + offsetZ, res)
-//    }
-//  },
-//
-//  JUMP_GAP_1_WEST(-2, 0) {
-//    override fun calculate(ctx: CalculationContext, parentX: Int, parentY: Int, parentZ: Int, res: MovementResult) {
-//      MovementJumpGap.calculateCost(ctx, parentX, parentY, parentZ, parentX + offsetX, parentZ + offsetZ, res)
-//    }
-//  },
-//
-//  JUMP_GAP_2_NORTH(0, -3) {
-//    override fun calculate(ctx: CalculationContext, parentX: Int, parentY: Int, parentZ: Int, res: MovementResult) {
-//      MovementJumpGap.calculateCost(ctx, parentX, parentY, parentZ, parentX + offsetX, parentZ + offsetZ, res)
-//    }
-//  },
-//
-//  JUMP_GAP_2_SOUTH(0, +3) {
-//    override fun calculate(ctx: CalculationContext, parentX: Int, parentY: Int, parentZ: Int, res: MovementResult) {
-//      MovementJumpGap.calculateCost(ctx, parentX, parentY, parentZ, parentX + offsetX, parentZ + offsetZ, res)
-//    }
-//  },
-//
-//  JUMP_GAP_2_EAST(+3, 0) {
-//    override fun calculate(ctx: CalculationContext, parentX: Int, parentY: Int, parentZ: Int, res: MovementResult) {
-//      MovementJumpGap.calculateCost(ctx, parentX, parentY, parentZ, parentX + offsetX, parentZ + offsetZ, res)
-//    }
-//  },
-//
-//  JUMP_GAP_2_WEST(-3, 0) {
-//    override fun calculate(ctx: CalculationContext, parentX: Int, parentY: Int, parentZ: Int, res: MovementResult) {
-//      MovementJumpGap.calculateCost(ctx, parentX, parentY, parentZ, parentX + offsetX, parentZ + offsetZ, res)
-//    }
-//  };
+  JUMP_GAP_1_NORTH(0, -2) {
+    override fun calculate(ctx: CalculationContext, parentX: Int, parentY: Int, parentZ: Int, res: MovementResult) {
+      MovementJumpGap.calculateCost(ctx, parentX, parentY, parentZ, parentX + offsetX, parentZ + offsetZ, res)
+    }
+  },
+
+  JUMP_GAP_1_SOUTH(0, +2) {
+    override fun calculate(ctx: CalculationContext, parentX: Int, parentY: Int, parentZ: Int, res: MovementResult) {
+      MovementJumpGap.calculateCost(ctx, parentX, parentY, parentZ, parentX + offsetX, parentZ + offsetZ, res)
+    }
+  },
+
+  JUMP_GAP_1_EAST(+2, 0) {
+    override fun calculate(ctx: CalculationContext, parentX: Int, parentY: Int, parentZ: Int, res: MovementResult) {
+      MovementJumpGap.calculateCost(ctx, parentX, parentY, parentZ, parentX + offsetX, parentZ + offsetZ, res)
+    }
+  },
+
+  JUMP_GAP_1_WEST(-2, 0) {
+    override fun calculate(ctx: CalculationContext, parentX: Int, parentY: Int, parentZ: Int, res: MovementResult) {
+      MovementJumpGap.calculateCost(ctx, parentX, parentY, parentZ, parentX + offsetX, parentZ + offsetZ, res)
+    }
+  },
+
+  JUMP_GAP_2_NORTH(0, -3) {
+    override fun calculate(ctx: CalculationContext, parentX: Int, parentY: Int, parentZ: Int, res: MovementResult) {
+      MovementJumpGap.calculateCost(ctx, parentX, parentY, parentZ, parentX + offsetX, parentZ + offsetZ, res)
+    }
+  },
+
+  JUMP_GAP_2_SOUTH(0, +3) {
+    override fun calculate(ctx: CalculationContext, parentX: Int, parentY: Int, parentZ: Int, res: MovementResult) {
+      MovementJumpGap.calculateCost(ctx, parentX, parentY, parentZ, parentX + offsetX, parentZ + offsetZ, res)
+    }
+  },
+
+  JUMP_GAP_2_EAST(+3, 0) {
+    override fun calculate(ctx: CalculationContext, parentX: Int, parentY: Int, parentZ: Int, res: MovementResult) {
+      MovementJumpGap.calculateCost(ctx, parentX, parentY, parentZ, parentX + offsetX, parentZ + offsetZ, res)
+    }
+  },
+
+  JUMP_GAP_2_WEST(-3, 0) {
+    override fun calculate(ctx: CalculationContext, parentX: Int, parentY: Int, parentZ: Int, res: MovementResult) {
+      MovementJumpGap.calculateCost(ctx, parentX, parentY, parentZ, parentX + offsetX, parentZ + offsetZ, res)
+    }
+  };
 
   abstract fun calculate(ctx: CalculationContext, parentX: Int, parentY: Int, parentZ: Int, res: MovementResult)
 

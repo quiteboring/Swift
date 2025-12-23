@@ -1,7 +1,6 @@
 package dev.quiteboring.swift.finder.movement
 
 import dev.quiteboring.swift.finder.calculate.PathNode
-import dev.quiteboring.swift.util.BlockUtils
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import kotlin.math.min
@@ -92,7 +91,7 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
       for (depth in 2..4) {
         val state = ctx.get(x, y - depth, z) ?: continue
         if (state.isAir || state.block is CarpetBlock) continue
-        if (BlockUtils.isSolid(ctx, x, y - depth, z, state)) {
+        if (MovementHelper.isSolid(ctx.bsa, x, y - depth, z, state)) {
           return depth >= 3
         }
       }
@@ -100,10 +99,10 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
     }
 
     if (below.block is CarpetBlock) {
-      return !BlockUtils.isSolid(ctx, x, y - 2, z)
+      return !MovementHelper.isSolid(ctx.bsa, x, y - 2, z)
     }
 
-    return !BlockUtils.isSolid(ctx, x, y - 1, z, below)
+    return !MovementHelper.isSolid(ctx.bsa, x, y - 1, z, below)
   }
 
   private fun isWall(x: Int, y: Int, z: Int): Boolean {
@@ -135,7 +134,7 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
       return true
     }
 
-    if (!BlockUtils.isSolid(ctx, x, y, z, state)) return false
+    if (!MovementHelper.isSolid(ctx.bsa, x, y, z, state)) return false
 
     val shape = state.getCollisionShape(null, null)
     if (shape.isEmpty) return false

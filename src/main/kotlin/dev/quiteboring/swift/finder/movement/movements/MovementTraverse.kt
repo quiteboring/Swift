@@ -20,7 +20,7 @@ class MovementTraverse(from: BlockPos, to: BlockPos) : Movement(from, to) {
       destX: Int, destZ: Int,
       res: MovementResult
     ) {
-      if (!MovementHelper.isSafe(ctx, destX, y, destZ)) return
+      if (!MovementHelper.isSafe(ctx.bsa, destX, y, destZ)) return
 
       res.set(destX, y, destZ)
       res.cost = ctx.cost.SPRINT_ONE_BLOCK_TIME + ctx.wdc.getPathPenalty(destX, y, destZ)

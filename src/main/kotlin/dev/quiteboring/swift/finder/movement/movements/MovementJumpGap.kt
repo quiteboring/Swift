@@ -4,7 +4,6 @@ import dev.quiteboring.swift.finder.movement.CalculationContext
 import dev.quiteboring.swift.finder.movement.Movement
 import dev.quiteboring.swift.finder.movement.MovementHelper
 import dev.quiteboring.swift.finder.movement.MovementResult
-import dev.quiteboring.swift.util.BlockUtils
 import kotlin.math.abs
 import net.minecraft.util.math.BlockPos
 
@@ -23,7 +22,7 @@ class MovementJumpGap(from: BlockPos, to: BlockPos) : Movement(from, to) {
       destX: Int, destZ: Int,
       res: MovementResult
     ) {
-      if (!MovementHelper.isSafe(ctx, destX, y, destZ)) return
+      if (!MovementHelper.isSafe(ctx.bsa, destX, y, destZ)) return
 
       val dx = destX - x
       val dz = destZ - z
@@ -31,14 +30,14 @@ class MovementJumpGap(from: BlockPos, to: BlockPos) : Movement(from, to) {
       val dirX = if (dx != 0) dx / dist else 0
       val dirZ = if (dz != 0) dz / dist else 0
 
-      if (!BlockUtils.isPassable(ctx, x, y + 2, z)) return
+      if (!MovementHelper.isPassable(ctx.bsa, x, y + 2, z)) return
 
       for (i in 1 until dist) {
         val checkX = x + (dirX * i)
         val checkZ = z + (dirZ * i)
-        if (!BlockUtils.isPassable(ctx, checkX, y, checkZ)) return
-        if (!BlockUtils.isPassable(ctx, checkX, y + 1, checkZ)) return
-        if (!BlockUtils.isPassable(ctx, checkX, y + 2, checkZ)) return
+        if (!MovementHelper.isPassable(ctx.bsa, checkX, y, checkZ)) return
+        if (!MovementHelper.isPassable(ctx.bsa, checkX, y + 1, checkZ)) return
+        if (!MovementHelper.isPassable(ctx.bsa, checkX, y + 2, checkZ)) return
       }
 
       res.set(destX, y, destZ)
