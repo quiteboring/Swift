@@ -17,6 +17,7 @@ class BlockStateAccessor(val world: World) {
 
   val mutablePos = BlockPos.Mutable()
   val access = BlockViewWrapper(this)
+
   val air: BlockState = Blocks.AIR.defaultState
 
   fun get(x: Int, y: Int, z: Int): BlockState {
@@ -48,7 +49,7 @@ class BlockStateAccessor(val world: World) {
       cached = region
     }
 
-    return cached.get(x and 511, y, z and 511) ?: return air
+    return cached.get(x and 511, y, z and 511) ?: air
   }
 
   fun getFromChunk(chunk: Chunk, x: Int, y: Int, z: Int): BlockState {
@@ -62,7 +63,7 @@ class BlockStateAccessor(val world: World) {
   }
 
   companion object {
-    const val DONT_USE_CACHE = false // Replace this with a setting
+    const val DONT_USE_CACHE = true // Replace this with a setting
   }
 
 }
