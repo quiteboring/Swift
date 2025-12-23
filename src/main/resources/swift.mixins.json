@@ -11,8 +11,7 @@
     "WorldRendererMixin"
   ],
   "mixins": [
-    "ClientConnectionMixin",
-    "YggdrasilServicesKeyInfoMixin"
+    "ClientConnectionMixin"
   ]
 }
 
