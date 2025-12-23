@@ -45,10 +45,12 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
   fun getPathPenalty(x: Int, y: Int, z: Int): Double {
     val key = PathNode.coordKey(x, y, z)
     var penalty = penaltyCache.get(key)
+
     if (java.lang.Double.isNaN(penalty)) {
       penalty = computePenalty(x, y, z)
       penaltyCache.put(key, penalty)
     }
+
     return penalty
   }
 
@@ -85,16 +87,18 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
   }
 
   private fun isEdge(x: Int, y: Int, z: Int): Boolean {
-    val below = ctx.get(x, y - 1, z) ?: return true
+    val below = ctx.get(x, y - 1, z)
 
     if (below.isAir) {
       for (depth in 2..4) {
-        val state = ctx.get(x, y - depth, z) ?: continue
+        val state = ctx.get(x, y - depth, z)
         if (state.isAir || state.block is CarpetBlock) continue
+
         if (MovementHelper.isSolid(ctx.bsa, x, y - depth, z, state)) {
           return depth >= 3
         }
       }
+
       return true
     }
 
@@ -110,7 +114,8 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
   }
 
   private fun isBlockingWall(x: Int, y: Int, z: Int): Boolean {
-    val state = ctx.get(x, y, z) ?: return false
+    val state = ctx.get(x, y, z)
+
     if (state.isAir) return false
     val block = state.block
 
@@ -136,7 +141,7 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
 
     if (!MovementHelper.isSolid(ctx.bsa, x, y, z, state)) return false
 
-    val shape = state.getCollisionShape(null, null)
+    val shape = state.getCollisionShape(ctx.bsa.access, ctx.bsa.mutablePos.set(x, y, z))
     if (shape.isEmpty) return false
 
     return shape.boundingBox.let { it.maxY - it.minY >= 0.5 }
@@ -145,26 +150,32 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
   fun getEdgeDistance(x: Int, y: Int, z: Int): Int {
     val key = PathNode.coordKey(x, y, z)
     var dist = edgeCache.get(key)
+
     if (dist == -1) {
       dist = min(
         min(scanForEdge(x, y, z, 0, -1), scanForEdge(x, y, z, 0, 1)),
         min(scanForEdge(x, y, z, 1, 0), scanForEdge(x, y, z, -1, 0))
       )
+
       edgeCache.put(key, dist)
     }
+
     return dist
   }
 
   fun getWallDistance(x: Int, y: Int, z: Int): Int {
     val key = PathNode.coordKey(x, y, z)
     var dist = wallCache.get(key)
+
     if (dist == -1) {
       dist = min(
         min(scanForWall(x, y, z, 0, -1), scanForWall(x, y, z, 0, 1)),
         min(scanForWall(x, y, z, 1, 0), scanForWall(x, y, z, -1, 0))
       )
+
       wallCache.put(key, dist)
     }
+
     return dist
   }
 

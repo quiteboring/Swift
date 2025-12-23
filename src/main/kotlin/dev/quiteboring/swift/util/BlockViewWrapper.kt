@@ -14,12 +14,12 @@ class BlockViewWrapper(
     return null
   }
 
-  override fun getBlockState(pos: BlockPos): BlockState? {
+  override fun getBlockState(pos: BlockPos): BlockState {
     return bsa.get(pos.x, pos.y, pos.z)
   }
 
   override fun getFluidState(pos: BlockPos): FluidState? {
-    return getBlockState(pos)?.fluidState
+    return getBlockState(pos).fluidState
   }
 
   override fun getHeight(): Int {

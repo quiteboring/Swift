@@ -19,7 +19,7 @@ class CalculationContext {
 
   val wdc = WallDistanceCalculator(this)
 
-  fun get(x: Int, y: Int, z: Int): BlockState? {
+  fun get(x: Int, y: Int, z: Int): BlockState {
     return bsa.get(x, y, z)
   }
 

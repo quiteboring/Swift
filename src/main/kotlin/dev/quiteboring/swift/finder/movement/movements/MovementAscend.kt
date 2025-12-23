@@ -27,7 +27,7 @@ class MovementAscend(from: BlockPos, to: BlockPos) : Movement(from, to) {
       res.set(destX, y + 1, destZ)
 
       val groundState = ctx.get(destX, y, destZ)
-      val block = groundState?.block
+      val block = groundState.block
 
       if (block is FenceBlock || block is FenceGateBlock || block is WallBlock) return
 
