@@ -3,8 +3,11 @@ package dev.quiteboring.swift.finder.movement.movements.fly
 import dev.quiteboring.swift.finder.movement.CalculationContext
 import dev.quiteboring.swift.finder.movement.MovementHelper
 import dev.quiteboring.swift.finder.movement.MovementResult
+import net.minecraft.text.Text
 
 object MovementFlyTraverse {
+  val mc = net.minecraft.client.MinecraftClient.getInstance()
+  val chat = mc.inGameHud.chatHud
 
   @JvmStatic
   fun calculateCost(
@@ -16,17 +19,40 @@ object MovementFlyTraverse {
     if (!MovementHelper.isPassable(ctx, x, y, z)) return
     if (!MovementHelper.isPassable(ctx, x, y + 1, z)) return
 
-    val neighbors = arrayOf(intArrayOf(1, 0), intArrayOf(-1, 0), intArrayOf(0, 1), intArrayOf(0, -1))
+    val neighbors = arrayOf(
+      // Right
+      intArrayOf(1, 0),
+      // Left
+      intArrayOf(-1, 0),
+      // Forward
+      intArrayOf(0, 1),
+      // Backward
+//      intArrayOf(0, -1),
+
+      // right 2
+      intArrayOf(2, 0),
+      // left 2
+      intArrayOf(-2, 0),
+//      // forward 2
+//      intArrayOf(0, 2),
+////      // backward 2
+////      intArrayOf(0, -2),
+
+
+    )
     var solidClose = 0
 
     for (n in neighbors) {
       if (
         MovementHelper.isSolid(ctx, destX + n[0], destY, destZ + n[1]) ||
         MovementHelper.isSolid(ctx, destX + n[0], destY + 1, destZ + n[1])
+
+
       ) solidClose++
     }
 
-    val tightPenalty = 0.05 * solidClose.coerceAtMost(4)
+    val tightPenalty = 1.4 * solidClose.coerceAtMost( 8)
+
     val lowCeiling = MovementHelper.isSolid(ctx, destX, destY + 2, destZ)
 
     var groundPenalty =
