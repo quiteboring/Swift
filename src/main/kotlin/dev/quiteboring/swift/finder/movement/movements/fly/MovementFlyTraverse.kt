@@ -23,19 +23,11 @@ object MovementFlyTraverse {
       intArrayOf(-1, 0),
       // Forward
       intArrayOf(0, 1),
-      // Backward
-//      intArrayOf(0, -1),
 
       // right 2
       intArrayOf(2, 0),
       // left 2
       intArrayOf(-2, 0),
-//      // forward 2
-//      intArrayOf(0, 2),
-////      // backward 2
-////      intArrayOf(0, -2),
-
-
     )
     var solidClose = 0
 
