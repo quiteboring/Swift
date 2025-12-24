@@ -26,9 +26,7 @@ object MovementDescend {
       if (!MovementHelper.isPassable(ctx, destX, destY, destZ)) return
 
       if (MovementHelper.isSolid(ctx, destX, destY - 1, destZ)) {
-        res.x = destX
-        res.y = destY
-        res.z = destZ
+        res.set(destX, destY, destZ)
 
         var totalCost = cost.WALK_OFF_EDGE_TIME + cost.getFallTime(fallDist)
 
@@ -43,4 +41,5 @@ object MovementDescend {
       }
     }
   }
+
 }

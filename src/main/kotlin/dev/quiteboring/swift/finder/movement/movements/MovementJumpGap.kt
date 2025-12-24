@@ -35,9 +35,7 @@ object MovementJumpGap {
       if (!MovementHelper.isPassable(ctx, checkX, y + 2, checkZ)) return
     }
 
-    res.x = destX
-    res.y = y
-    res.z = destZ
+    res.set(destX, y, destZ)
 
     val cost = ctx.cost
     res.cost = cost.JUMP_PENALTY +

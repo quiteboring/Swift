@@ -22,9 +22,7 @@ object MovementAscend {
 
     if (block is FenceBlock || block is FenceGateBlock || block is WallBlock) return
 
-    res.x = destX
-    res.y = y + 1
-    res.z = destZ
+    res.set(destX, y + 1, destZ)
 
     res.cost = if (block is SlabBlock || block is StairsBlock) {
       ctx.cost.SLAB_ASCENT_TIME
@@ -32,4 +30,5 @@ object MovementAscend {
       ctx.cost.JUMP_UP_ONE_BLOCK_TIME
     } + ctx.wdc.getPathPenalty(destX, y + 1, destZ)
   }
+
 }

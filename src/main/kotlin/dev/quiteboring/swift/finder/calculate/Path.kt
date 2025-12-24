@@ -1,8 +1,9 @@
 package dev.quiteboring.swift.finder.calculate
 
+import dev.quiteboring.swift.finder.movement.CalculationContext
 import net.minecraft.util.math.BlockPos
 
-class Path(endNode: PathNode, val timeTaken: Long) {
+class Path(private val ctx: CalculationContext, endNode: PathNode, val timeTaken: Long) {
 
   val points: List<BlockPos>
   val keyNodes: List<BlockPos>
@@ -20,6 +21,9 @@ class Path(endNode: PathNode, val timeTaken: Long) {
     keyNodes = extractKeyPoints(points)
   }
 
+  /**
+   * Thank you EpsilonPhoenix for this superb function!
+   */
   private fun extractKeyPoints(points: List<BlockPos>): List<BlockPos> {
     if (points.isEmpty()) return emptyList()
     if (points.size <= 2) return points.toList()

@@ -5,9 +5,11 @@ import dev.quiteboring.swift.finder.calculate.PathNode
 import dev.quiteboring.swift.finder.calculate.openset.BinaryHeapOpenSet
 import dev.quiteboring.swift.finder.goal.IGoal
 import dev.quiteboring.swift.finder.movement.CalculationContext
+import dev.quiteboring.swift.finder.movement.IMove
 import dev.quiteboring.swift.finder.movement.MovementResult
 import dev.quiteboring.swift.finder.movement.Moves
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
+import kotlin.enums.EnumEntries
 
 /**
  * Thank you EpsilonPhoenix for this superb class!
@@ -19,18 +21,13 @@ class AStarPathfinder(
   private val goal: IGoal,
   private val ctx: CalculationContext,
   private val maxIterations: Int = 500_000,
-  private val heuristicWeight: Double = 1.05 // was 1.1. made it lower because maybe it's better on long path?
+  private val heuristicWeight: Double = 1.05, // was 1.1. made it lower because maybe it's better on long path?
+  private val moves: List<IMove> = Moves.entries
 ) {
 
   private val nodeMap = Long2ObjectOpenHashMap<PathNode>(4096)
   private val openSet = BinaryHeapOpenSet(4096)
   private val res = MovementResult()
-  private val infCost = ctx.cost.INF_COST
-
-  companion object {
-    @JvmField
-    val MOVES = Moves.entries.toTypedArray()
-  }
 
   fun findPath(): Path? {
     val startNode = getOrCreateNode(startX, startY, startZ)
@@ -51,17 +48,17 @@ class AStarPathfinder(
 
       if (goal.isAtGoal(cx, cy, cz)) {
         val elapsed = (System.nanoTime() - startTime) / 1_000_000
-        return Path(current, elapsed)
+        return Path(ctx, current, elapsed)
       }
 
       val currentCost = current.gCost
 
-      for (move in MOVES) {
+      for (move in moves) {
         res.reset()
         move.calculate(ctx, cx, cy, cz, res)
 
         val moveCost = res.cost
-        if (moveCost >= infCost) continue
+        if (moveCost >= ctx.cost.INF_COST) continue
 
         val nx = res.x
         val ny = res.y
