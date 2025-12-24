@@ -35,8 +35,6 @@ object MovementFlyTraverse {
       if (
         MovementHelper.isSolid(ctx, destX + n[0], destY, destZ + n[1]) ||
         MovementHelper.isSolid(ctx, destX + n[0], destY + 1, destZ + n[1])
-
-
       ) solidClose++
     }
 
