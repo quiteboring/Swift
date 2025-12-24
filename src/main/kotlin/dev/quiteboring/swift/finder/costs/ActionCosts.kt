@@ -5,6 +5,7 @@ class ActionCosts(
 ) {
 
   val INF_COST = 1e6
+
   val SPRINT_ONE_BLOCK_TIME = 1.0 / 0.2806
   val SPRINT_DIAGONAL_TIME = SPRINT_ONE_BLOCK_TIME * 1.414
   val JUMP_UP_ONE_BLOCK_TIME: Double
@@ -14,8 +15,11 @@ class ActionCosts(
   val SLAB_ASCENT_TIME = SPRINT_ONE_BLOCK_TIME * 1.1
   val WALK_OFF_EDGE_TIME = SPRINT_ONE_BLOCK_TIME * 0.5
   val LAND_RECOVERY_TIME = 2.0
-
   private val fallTimes: DoubleArray = generateFallTimes()
+
+  // For fly pathfinding
+  val FLY_ONE_BLOCK_TIME = 1.0 / 0.8
+  val ALTITUDE_RELUCTANCE = FLY_ONE_BLOCK_TIME * 0.4
 
   init {
     var vel = 0.42 + (jumpBoostAmplifier + 1).coerceAtLeast(0) * 0.1

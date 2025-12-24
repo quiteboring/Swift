@@ -7,6 +7,7 @@ import dev.quiteboring.swift.event.Context
 import dev.quiteboring.swift.finder.calculate.Path
 import dev.quiteboring.swift.finder.calculate.path.AStarPathfinder
 import dev.quiteboring.swift.finder.goal.Goal
+import dev.quiteboring.swift.finder.goal.GoalFly
 import dev.quiteboring.swift.finder.movement.CalculationContext
 import dev.quiteboring.swift.finder.movement.Moves
 import dev.quiteboring.swift.finder.movement.MovesFly
@@ -81,11 +82,12 @@ object PathCommand {
     return try {
       val ctx = CalculationContext()
       val moves = if (fly) MovesFly.entries else Moves.entries
+      val goal = if (fly) GoalFly(x, y, z, ctx) else Goal(x, y, z, ctx)
 
       val result = AStarPathfinder(
         standingOn.x, standingOn.y, standingOn.z,
-        Goal(x, y, z, ctx),
-        ctx,
+        goal = goal,
+        ctx = ctx,
         moves = moves
       ).findPath()
 

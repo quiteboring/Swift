@@ -19,24 +19,23 @@ class Goal(
   override fun isAtGoal(x: Int, y: Int, z: Int): Boolean {
     return x == goalX && y == goalY && z == goalZ
   }
-
   override fun heuristic(x: Int, y: Int, z: Int): Double {
     val dx = abs(x - goalX)
-    val dy = y - goalY
     val dz = abs(z - goalZ)
+    val dy = y - goalY
 
-    val minHoriz = if (dx < dz) dx else dz
-    val maxHoriz = if (dx > dz) dx else dz
+    val minHoriz = minOf(dx, dz)
+    val maxHoriz = maxOf(dx, dz)
     val horizontal = minHoriz * diagonalCost + (maxHoriz - minHoriz) * sprintCost
 
-    val vertical = if (dy > 0) {
-      dy * fallCostPerBlock
-    } else if (dy < 0) {
-      -dy * jumpCostPerBlock
-    } else {
-      0.0
+    if (dy == 0) {
+      return horizontal
     }
 
-    return horizontal + vertical
+    val vertical = if (dy > 0) dy * fallCostPerBlock else -dy * jumpCostPerBlock
+    val reluctance = abs(dy) * sprintCost * 0.35
+
+    return horizontal + vertical + reluctance
   }
+
 }
