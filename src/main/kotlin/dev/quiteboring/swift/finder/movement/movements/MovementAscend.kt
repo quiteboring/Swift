@@ -32,4 +32,5 @@ object MovementAscend {
       ctx.cost.JUMP_UP_ONE_BLOCK_TIME
     } + ctx.wdc.getPathPenalty(destX, y + 1, destZ)
   }
+
 }
