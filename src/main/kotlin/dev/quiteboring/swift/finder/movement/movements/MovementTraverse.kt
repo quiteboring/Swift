@@ -15,9 +15,7 @@ object MovementTraverse {
   ) {
     if (!MovementHelper.isSafe(ctx, destX, y, destZ)) return
 
-    res.x = destX
-    res.y = y
-    res.z = destZ
+    res.set(destX, y, destZ)
     res.cost = ctx.cost.SPRINT_ONE_BLOCK_TIME + ctx.wdc.getPathPenalty(destX, y, destZ)
   }
 

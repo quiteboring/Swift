@@ -18,9 +18,7 @@ object MovementDiagonal {
     if (MovementHelper.isSolid(ctx, x, y, destZ) || MovementHelper.isSolid(ctx, destX, y, z)) return
     if (MovementHelper.isSolid(ctx, x, y + 1, destZ) || MovementHelper.isSolid(ctx, destX, y + 1, z)) return
 
-    res.x = destX
-    res.y = y
-    res.z = destZ
+    res.set(destX, y, destZ)
     res.cost = ctx.cost.SPRINT_DIAGONAL_TIME + ctx.wdc.getPathPenalty(destX, y, destZ)
   }
 }
