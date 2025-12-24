@@ -29,6 +29,6 @@ class GoalFly(
     val base = distance * flyOneBlockCost
     val yBias = dy * altitudeReluctance
 
-    return base + yBias
+    return distance * flyOneBlockCost
   }
 }
