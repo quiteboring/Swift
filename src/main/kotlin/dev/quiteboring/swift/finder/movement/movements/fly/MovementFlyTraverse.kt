@@ -38,7 +38,7 @@ object MovementFlyTraverse {
       ) solidClose++
     }
 
-    val tightPenalty = 1.4 * solidClose.coerceAtMost( 8)
+    val tightPenalty = 1.4 * solidClose.coerceAtMost(8)
 
     val lowCeiling = MovementHelper.isSolid(ctx, destX, destY + 2, destZ)
 
