@@ -17,16 +17,10 @@ object MovementFlyTraverse {
     if (!MovementHelper.isPassable(ctx, x, y + 1, z)) return
 
     val neighbors = arrayOf(
-      // Right
       intArrayOf(1, 0),
-      // Left
       intArrayOf(-1, 0),
-      // Forward
       intArrayOf(0, 1),
-
-      // right 2
       intArrayOf(2, 0),
-      // left 2
       intArrayOf(-2, 0),
     )
     var solidClose = 0
