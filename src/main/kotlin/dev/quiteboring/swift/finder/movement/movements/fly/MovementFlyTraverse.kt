@@ -3,11 +3,8 @@ package dev.quiteboring.swift.finder.movement.movements.fly
 import dev.quiteboring.swift.finder.movement.CalculationContext
 import dev.quiteboring.swift.finder.movement.MovementHelper
 import dev.quiteboring.swift.finder.movement.MovementResult
-import net.minecraft.text.Text
 
 object MovementFlyTraverse {
-  val mc = net.minecraft.client.MinecraftClient.getInstance()
-  val chat = mc.inGameHud.chatHud
 
   @JvmStatic
   fun calculateCost(
