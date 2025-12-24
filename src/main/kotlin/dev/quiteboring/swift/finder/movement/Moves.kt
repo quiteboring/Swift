@@ -2,7 +2,7 @@ package dev.quiteboring.swift.finder.movement
 
 import dev.quiteboring.swift.finder.movement.movements.*
 
-enum class Moves(val offsetX: Int, val offsetZ: Int) {
+enum class Moves(val offsetX: Int, val offsetZ: Int) : IMove {
 
   TRAVERSE_NORTH(0, -1) {
     override fun calculate(ctx: CalculationContext, px: Int, py: Int, pz: Int, res: MovementResult) =
@@ -108,5 +108,4 @@ enum class Moves(val offsetX: Int, val offsetZ: Int) {
       MovementJumpGap.calculateCost(ctx, px, py, pz, px + offsetX, pz + offsetZ, res)
   };
 
-  abstract fun calculate(ctx: CalculationContext, px: Int, py: Int, pz: Int, res: MovementResult)
 }

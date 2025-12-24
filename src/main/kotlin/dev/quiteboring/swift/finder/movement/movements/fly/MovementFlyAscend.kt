@@ -12,7 +12,7 @@ object MovementFlyAscend {
     destX: Int, destY: Int, destZ: Int,
     res: MovementResult
   ) {
-
+    res.cost = 1.0
   }
 
 }
