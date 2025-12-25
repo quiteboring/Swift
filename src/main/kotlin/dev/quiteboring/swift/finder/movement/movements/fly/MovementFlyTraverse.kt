@@ -16,7 +16,13 @@ object MovementFlyTraverse {
     if (!MovementHelper.isPassable(ctx, x, y, z)) return
     if (!MovementHelper.isPassable(ctx, x, y + 1, z)) return
 
-    val neighbors = arrayOf(intArrayOf(1, 0), intArrayOf(-1, 0), intArrayOf(0, 1), intArrayOf(0, -1))
+    val neighbors = arrayOf(
+      intArrayOf(1, 0),
+      intArrayOf(-1, 0),
+      intArrayOf(0, 1),
+      intArrayOf(2, 0),
+      intArrayOf(-2, 0),
+    )
     var solidClose = 0
 
     for (n in neighbors) {
@@ -26,7 +32,8 @@ object MovementFlyTraverse {
       ) solidClose++
     }
 
-    val tightPenalty = 0.05 * solidClose.coerceAtMost(4)
+    val tightPenalty = 1.4 * solidClose.coerceAtMost(8)
+
     val lowCeiling = MovementHelper.isSolid(ctx, destX, destY + 2, destZ)
 
     var groundPenalty =

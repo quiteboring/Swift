@@ -18,7 +18,7 @@ class ActionCosts(
   private val fallTimes: DoubleArray = generateFallTimes()
 
   // For fly pathfinding
-  val FLY_ONE_BLOCK_TIME = 1.0 / 0.8
+  val FLY_ONE_BLOCK_TIME = 1.0 / 0.7
   val ALTITUDE_RELUCTANCE = FLY_ONE_BLOCK_TIME * 0.4
 
   init {
